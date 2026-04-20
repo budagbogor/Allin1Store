@@ -27,6 +27,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const [date, setDate] = useState<Date>();
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
   const [model, setModel] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [jenisList, setJenisList] = useState<string[]>([]);
   const [jenisSelect, setJenisSelect] = useState("");
   const [sales, setSales] = useState("");
@@ -40,10 +41,12 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       setModel(editData.modelKendaraan);
       setJenisList(editData.jenisPekerjaan.split(" | ").map((s) => s.trim()));
       setSales(new Intl.NumberFormat("id-ID").format(editData.jumlahSales));
+      setSelectedCategory(""); // Reset category on edit
     } else if (open && !editData) {
       setDate(undefined);
       setMerek("");
       setModel("");
+      setSelectedCategory("");
       setJenisList([]);
       setJenisSelect("");
       setSales("");
@@ -60,6 +63,8 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const removeJenis = (val: string) => {
     setJenisList((prev) => prev.filter((j) => j !== val));
   };
+
+  const filteredJobs = JENIS_PEKERJAAN_GROUPS.find((g) => g.category === selectedCategory)?.items || [];
 
   const handleSubmit = async () => {
     if (!date || !merek || !model || jenisList.length === 0 || !sales) {
@@ -183,6 +188,22 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
           </div>
 
           <div className="grid gap-2">
+            <Label>Kategori Sistem</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih kategori sistem" />
+              </SelectTrigger>
+              <SelectContent>
+                {JENIS_PEKERJAAN_GROUPS.map((group) => (
+                  <SelectItem key={group.category} value={group.category}>
+                    {group.category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
             <Label>Jenis Pekerjaan</Label>
             <Select
               value={jenisSelect}
@@ -190,22 +211,14 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
                 setJenisSelect(val);
                 addJenis(val);
               }}
+              disabled={!selectedCategory}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Pilih jenis pekerjaan" />
+                <SelectValue placeholder={selectedCategory ? "Pilih pekerjaan" : "Pilih kategori dulu"} />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                {JENIS_PEKERJAAN_GROUPS.map((group) => (
-                  <SelectGroup key={group.category}>
-                    <SelectLabel className="text-primary font-bold px-2 py-1.5 text-xs uppercase tracking-wider bg-muted/50">
-                      {group.category}
-                    </SelectLabel>
-                    {group.items.map((j) => (
-                      <SelectItem key={j} value={j} className="pl-4">
-                        {j}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                {filteredJobs.map((j) => (
+                  <SelectItem key={j} value={j}>{j}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
