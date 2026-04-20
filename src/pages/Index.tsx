@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Car, TrendingUp, Target, Trash2, AlertCircle, Download } from "lucide-react";
+import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { InputForm } from "@/components/InputForm";
@@ -27,6 +27,8 @@ import logoMobeng from "@/assets/logomobeng.jpg";
 export default function Dashboard() {
   const [allEntries, setAllEntries] = useState<SalesEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingEntry, setEditingEntry] = useState<SalesEntry | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -55,6 +57,7 @@ export default function Dashboard() {
   const chartData = BULAN.map((name, i) => ({ name, sales: monthlySales[i] }));
 
   const handleDelete = async (id: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
     try {
       await deleteEntry(id);
       setAllEntries((prev) => prev.filter((e) => e.id !== id));
@@ -62,6 +65,11 @@ export default function Dashboard() {
     } catch {
       toast.error("Gagal menghapus data.");
     }
+  };
+
+  const handleEdit = (entry: SalesEntry) => {
+    setEditingEntry(entry);
+    setIsEditOpen(true);
   };
 
   const handleDownload = async () => {
@@ -92,7 +100,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex w-full flex-col sm:w-auto sm:flex-row gap-2">
-            <InputForm onAdded={fetchEntries} />
+            <InputForm onSuccess={fetchEntries} />
             <MonthlyReportDialog />
             <Button variant="secondary" className="gap-2 w-full sm:w-auto" onClick={handleDownload} disabled={loading}>
               <Download className="h-4 w-4" />
@@ -101,6 +109,17 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
+
+      {/* Edit Form Modal */}
+      <InputForm
+        editData={editingEntry}
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open);
+          if (!open) setEditingEntry(null);
+        }}
+        onSuccess={fetchEntries}
+      />
 
       <main className="container mx-auto flex-1 py-5 sm:py-6 px-3 sm:px-4 space-y-5 sm:space-y-6">
         {loading ? (
@@ -144,7 +163,7 @@ export default function Dashboard() {
               <Card className="glass-card">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium font-body text-muted-foreground">Unit Entry</CardTitle>
-                  <Car className="h-5 w-5 text-primary" />
+                  <Card className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-heading font-bold">{unitCount}</div>
@@ -278,7 +297,7 @@ export default function Dashboard() {
                         <TableHead>Model</TableHead>
                         <TableHead>Jenis Pekerjaan</TableHead>
                         <TableHead className="text-right">Sales</TableHead>
-                        <TableHead className="w-10"></TableHead>
+                        <TableHead className="w-20"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -292,9 +311,14 @@ export default function Dashboard() {
                           </TableCell>
                           <TableCell className="text-right font-medium whitespace-nowrap">{formatIDR(e.jumlahSales)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(e)}>
+                                <Edit2 className="h-4 w-4 text-primary" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,17 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { JENIS_PEKERJAAN, MEREK_KENDARAAN, MODEL_BY_MEREK, saveEntry } from "@/lib/data";
+import { JENIS_PEKERJAAN_GROUPS, MEREK_KENDARAAN, MODEL_BY_MEREK, saveEntry, updateEntry, type SalesEntry } from "@/lib/data";
 import { toast } from "sonner";
 
 interface Props {
-  onAdded: () => void;
+  onSuccess: () => void;
+  editData?: SalesEntry | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function InputForm({ onAdded }: Props) {
-  const [open, setOpen] = useState(false);
+export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenChange }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
+
   const [date, setDate] = useState<Date>();
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
   const [model, setModel] = useState("");
@@ -25,6 +31,24 @@ export function InputForm({ onAdded }: Props) {
   const [jenisSelect, setJenisSelect] = useState("");
   const [sales, setSales] = useState("");
   const [saving, setSaving] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    if (open && editData) {
+      setDate(new Date(editData.tanggal));
+      setMerek(editData.merekKendaraan as any);
+      setModel(editData.modelKendaraan);
+      setJenisList(editData.jenisPekerjaan.split(" | ").map((s) => s.trim()));
+      setSales(new Intl.NumberFormat("id-ID").format(editData.jumlahSales));
+    } else if (open && !editData) {
+      setDate(undefined);
+      setMerek("");
+      setModel("");
+      setJenisList([]);
+      setJenisSelect("");
+      setSales("");
+    }
+  }, [open, editData]);
 
   const addJenis = (val: string) => {
     const trimmed = val.trim();
@@ -49,22 +73,24 @@ export function InputForm({ onAdded }: Props) {
     }
     setSaving(true);
     try {
-      await saveEntry({
+      const payload = {
         tanggal: format(date, "yyyy-MM-dd"),
         merekKendaraan: merek,
         modelKendaraan: model,
         jenisPekerjaan: jenisList.join(" | "),
         jumlahSales: amount,
-      });
-      toast.success("Data berhasil disimpan!");
-      setDate(undefined);
-      setMerek("");
-      setModel("");
-      setJenisList([]);
-      setJenisSelect("");
-      setSales("");
+      };
+
+      if (editData?.id) {
+        await updateEntry(editData.id, payload);
+        toast.success("Data berhasil diperbarui!");
+      } else {
+        await saveEntry(payload);
+        toast.success("Data berhasil disimpan!");
+      }
+
       setOpen(false);
-      onAdded();
+      onSuccess();
     } catch {
       toast.error("Gagal menyimpan data.");
     } finally {
@@ -80,20 +106,24 @@ export function InputForm({ onAdded }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 w-full sm:w-auto">
-          <Plus className="h-4 w-4" />
-          Input Data Baru
-        </Button>
-      </DialogTrigger>
+      {!editData && (
+        <DialogTrigger asChild>
+          <Button className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Input Data Baru
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Input Pekerjaan Harian</DialogTitle>
+          <DialogTitle className="text-xl">
+            {editData ? "Edit Pekerjaan Harian" : "Input Pekerjaan Harian"}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
             <Label>Tanggal</Label>
-            <Popover>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -104,7 +134,16 @@ export function InputForm({ onAdded }: Props) {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus className="p-3 pointer-events-auto" />
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(d) => {
+                    setDate(d);
+                    setPopoverOpen(false);
+                  }}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
               </PopoverContent>
             </Popover>
           </div>
@@ -156,8 +195,17 @@ export function InputForm({ onAdded }: Props) {
                 <SelectValue placeholder="Pilih jenis pekerjaan" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                {JENIS_PEKERJAAN.map((j) => (
-                  <SelectItem key={j} value={j}>{j}</SelectItem>
+                {JENIS_PEKERJAAN_GROUPS.map((group) => (
+                  <SelectGroup key={group.category}>
+                    <SelectLabel className="text-primary font-bold px-2 py-1.5 text-xs uppercase tracking-wider bg-muted/50">
+                      {group.category}
+                    </SelectLabel>
+                    {group.items.map((j) => (
+                      <SelectItem key={j} value={j} className="pl-4">
+                        {j}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>
@@ -193,7 +241,7 @@ export function InputForm({ onAdded }: Props) {
           </div>
 
           <Button onClick={handleSubmit} disabled={saving} className="w-full mt-2">
-            {saving ? "Menyimpan..." : "Simpan Data"}
+            {saving ? "Menyimpan..." : editData ? "Perbarui Data" : "Simpan Data"}
           </Button>
         </div>
       </DialogContent>

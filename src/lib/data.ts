@@ -1,25 +1,41 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const JENIS_PEKERJAAN = [
-  "Ganti MAF", "Ganti CKP", "Ganti CMP", "Ganti O2", "Ganti IAT",
-  "Ganti PCV", "Ganti ISC", "Ganti THROTTLE ASSY", "Ganti Temp. Switch",
-  "Ganti Ignition Coil", "Ganti V-Belt", "Ganti Tensioner",
-  "Ganti Engine Mounting RH Mounting", "Ganti Engine Mounting LH Mounting",
-  "Ganti Seal Crankshaft Belakang",
-  "Ganti Tutup Radiator", "Ganti Radiator", "Ganti Motor Fan Radiator",
-  "Ganti Fuel Filter", "Ganti Fuel Pump", "Ganti Injektor",
-  "Ganti Motor Starter", "Ganti Magnetic S/W", "Ganti Alternator",
-  "Ganti Fuse", "Ganti Relay", "Ganti Master Rem",
-  "Ganti Wheel Cylinder Rem", "Ganti Piston Caliper", "Ganti Rack Steer",
-  "Ganti Upper Arm", "Ganti Boot Shock Absorber",
-  "Ganti Bounding Shock Absorber", "Ganti Boot Steer",
-  "Ganti Karet Stabilizer", "Ganti Seal Drive Shaft",
-  "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda",
-  "Ganti Filter CVT", "Ganti Kopling Set",
-  "Ganti Seal Input Shaft", "Ganti Seal Output Shaft",
-  "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling",
-  "Others",
-] as const;
+export const JENIS_PEKERJAAN_GROUPS = [
+  {
+    category: "Mesin & Sensor",
+    items: ["Ganti MAF", "Ganti CKP", "Ganti CMP", "Ganti O2", "Ganti IAT", "Ganti PCV", "Ganti ISC", "Ganti THROTTLE ASSY", "Ganti Temp. Switch", "Ganti Ignition Coil"]
+  },
+  {
+    category: "Pendingin & Belt",
+    items: ["Ganti V-Belt", "Ganti Tensioner", "Ganti Engine Mounting RH Mounting", "Ganti Engine Mounting LH Mounting", "Ganti Seal Crankshaft Belakang", "Ganti Tutup Radiator", "Ganti Radiator", "Ganti Motor Fan Radiator"]
+  },
+  {
+    category: "Sistem Bahan Bakar",
+    items: ["Ganti Fuel Filter", "Ganti Fuel Pump", "Ganti Injektor"]
+  },
+  {
+    category: "Kelistrikan",
+    items: ["Ganti Motor Starter", "Ganti Magnetic S/W", "Ganti Alternator", "Ganti Fuse", "Ganti Relay"]
+  },
+  {
+    category: "Sistem Rem",
+    items: ["Ganti Master Rem", "Ganti Disk Brake", "Ganti Wheel Cylinder Rem", "Ganti Piston Caliper"]
+  },
+  {
+    category: "Kemudi & Suspensi",
+    items: ["Ganti Rack Steer", "Ganti Upper Arm", "Ganti Lower Arm", "Ganti Boot Shock Absorber", "Ganti Bounding Shock Absorber", "Ganti Boot Steer", "Ganti Karet Stabilizer"]
+  },
+  {
+    category: "Transmisi & Penggerak",
+    items: ["Ganti Seal Drive Shaft", "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda", "Ganti Filter CVT", "Ganti Kopling Set", "Ganti Seal Input Shaft", "Ganti Seal Output Shaft", "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling"]
+  },
+  {
+    category: "Lainnya",
+    items: ["Others"]
+  }
+];
+
+export const JENIS_PEKERJAAN = JENIS_PEKERJAAN_GROUPS.flatMap(g => g.items);
 
 export const MEREK_KENDARAAN = [
   "Toyota",
@@ -245,6 +261,30 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
       jenis_pekerjaan: entry.jenisPekerjaan,
       jumlah_sales: entry.jumlahSales,
     })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    tanggal: data.tanggal,
+    merekKendaraan: data.merek_kendaraan,
+    modelKendaraan: data.model_kendaraan,
+    jenisPekerjaan: data.jenis_pekerjaan,
+    jumlahSales: Number(data.jumlah_sales),
+  };
+}
+
+export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Promise<SalesEntry> {
+  const { data, error } = await supabase
+    .from("sales_entries")
+    .update({
+      tanggal: entry.tanggal,
+      merek_kendaraan: entry.merekKendaraan,
+      model_kendaraan: entry.modelKendaraan,
+      jenis_pekerjaan: entry.jenisPekerjaan,
+      jumlah_sales: entry.jumlahSales,
+    })
+    .eq("id", id)
     .select()
     .single();
   if (error) throw error;
