@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2 } from "lucide-react";
+import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { InputForm } from "@/components/InputForm";
@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import logoMobeng from "@/assets/logomobeng.jpg";
 
 export default function Dashboard() {
@@ -100,6 +101,12 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex w-full flex-col sm:w-auto sm:flex-row gap-2">
+            <Link to="/complaints" className="w-full sm:w-auto">
+              <Button variant="secondary" className="gap-2 w-full bg-accent text-white hover:bg-accent/90 border-none">
+                <AlertTriangle className="h-4 w-4" />
+                Menu Complain
+              </Button>
+            </Link>
             <InputForm onSuccess={fetchEntries} />
             <MonthlyReportDialog />
             <Button variant="secondary" className="gap-2 w-full sm:w-auto" onClick={handleDownload} disabled={loading}>

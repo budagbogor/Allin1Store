@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const JENIS_PEKERJAAN_GROUPS = [
   {
     category: "Mesin & Sensor",
-    items: ["Ganti MAF", "Ganti CKP", "Ganti CMP", "Ganti O2", "Ganti IAT", "Ganti PCV", "Ganti ISC", "Ganti THROTTLE ASSY", "Ganti Temp. Switch", "Ganti Ignition Coil"]
+    items: ["Ganti MAF", "Ganti CKP", "Ganti CMP", "Ganti O2", "Ganti IAT", "Ganti PCV", "Ganti ISC", "Ganti THROTTLE ASSY", "Ganti Temp. Switch", "Ganti Ignition Coil", "Ganti Seal Cover Valve", "Ganti Seal Crankshaft"]
   },
   {
     category: "Pendingin & Belt",
@@ -233,6 +233,26 @@ export interface MonthlyReport {
   actionPlan: string;
 }
 
+export interface ComplaintEntry {
+  id: string;
+  tanggal: string;
+  merekKendaraan: string;
+  modelKendaraan: string;
+  jenisComplain: string;
+  keterangan: string;
+  status: "Open" | "In Progress" | "Resolved";
+}
+
+export const COMPLAINT_TYPES = [
+  "Suara Berisik",
+  "Kebocoran Cairan",
+  "Fungsi Tidak Optimal",
+  "Kerusakan Fisik",
+  "Kelistrikan Bermasalah",
+  "Pemasangan Tidak Rapi",
+  "Lainnya",
+];
+
 // --- Supabase CRUD ---
 
 export async function getEntries(): Promise<SalesEntry[]> {
@@ -329,6 +349,66 @@ export async function saveMonthlyReport(report: MonthlyReport) {
       { onConflict: "bulan,tahun" }
     );
   if (error) throw error;
+}
+
+// --- Complaints CRUD ---
+
+export async function getComplaints(): Promise<ComplaintEntry[]> {
+  const { data, error } = await supabase
+    .from("complaints")
+    .select("*")
+    .order("tanggal", { ascending: false });
+  if (error) {
+    console.error("Error fetching complaints:", error);
+    return []; // Return empty if table doesn't exist yet
+  }
+  return (data || []).map((r) => ({
+    id: r.id,
+    tanggal: r.tanggal,
+    merekKendaraan: r.merek_kendaraan,
+    modelKendaraan: r.model_kendaraan,
+    jenisComplain: r.jenis_complain,
+    keterangan: r.keterangan,
+    status: r.status,
+  }));
+}
+
+export async function saveComplaint(entry: Omit<ComplaintEntry, "id">): Promise<ComplaintEntry> {
+  const { data, error } = await supabase
+    .from("complaints")
+    .insert({
+      tanggal: entry.tanggal,
+      merek_kendaraan: entry.merekKendaraan,
+      model_kendaraan: entry.modelKendaraan,
+      jenis_complain: entry.jenisComplain,
+      keterangan: entry.keterangan,
+      status: entry.status,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    tanggal: data.tanggal,
+    merekKendaraan: data.merek_kendaraan,
+    modelKendaraan: data.model_kendaraan,
+    jenisComplain: data.jenis_complain,
+    keterangan: data.keterangan,
+    status: data.status,
+  };
+}
+
+export async function deleteComplaint(id: string) {
+  const { error } = await supabase.from("complaints").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export function getComplaintStats(complaints: ComplaintEntry[]) {
+  const map: Record<string, number> = {};
+  complaints.forEach((c) => {
+    map[c.jenisComplain] = (map[c.jenisComplain] || 0) + 1;
+  });
+  return Object.entries(map).map(([name, value]) => ({ name, value }));
 }
 
 export function formatIDR(amount: number): string {
