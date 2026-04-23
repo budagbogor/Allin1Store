@@ -27,7 +27,7 @@ export const JENIS_PEKERJAAN_GROUPS = [
   },
   {
     category: "Transmisi & Penggerak",
-    items: ["Ganti Seal Drive Shaft", "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda", "Ganti Filter CVT", "Ganti Kopling Set", "Ganti Seal Input Shaft", "Ganti Seal Output Shaft", "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling"]
+    items: ["Ganti Seal Drive Shaft", "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda", "Ganti Filter CVT", "Ganti Kopling Set", "Ganti Seal Input Shaft", "Ganti Seal Output Shaft", "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling", "Ganti Kopling Set + Seal Crankshaft"]
   },
   {
     category: "Lainnya",
