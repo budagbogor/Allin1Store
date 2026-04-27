@@ -223,6 +223,10 @@ export interface SalesEntry {
   modelKendaraan: string;
   jenisPekerjaan: string;
   jumlahSales: number;
+  leadtimeJam?: number;
+  leadtimeMenit?: number;
+  specialTools?: string; // pipe-separated
+  langkahPengerjaan?: string;
 }
 
 export interface MonthlyReport {
@@ -268,6 +272,10 @@ export async function getEntries(): Promise<SalesEntry[]> {
     modelKendaraan: r.model_kendaraan,
     jenisPekerjaan: r.jenis_pekerjaan,
     jumlahSales: Number(r.jumlah_sales),
+    leadtimeJam: r.leadtime_jam ?? 0,
+    leadtimeMenit: r.leadtime_menit ?? 0,
+    specialTools: r.special_tools ?? "",
+    langkahPengerjaan: r.langkah_pengerjaan ?? "",
   }));
 }
 
@@ -280,6 +288,10 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
       model_kendaraan: entry.modelKendaraan,
       jenis_pekerjaan: entry.jenisPekerjaan,
       jumlah_sales: entry.jumlahSales,
+      leadtime_jam: entry.leadtimeJam ?? 0,
+      leadtime_menit: entry.leadtimeMenit ?? 0,
+      special_tools: entry.specialTools ?? "",
+      langkah_pengerjaan: entry.langkahPengerjaan ?? "",
     })
     .select()
     .single();
@@ -291,6 +303,10 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
     modelKendaraan: data.model_kendaraan,
     jenisPekerjaan: data.jenis_pekerjaan,
     jumlahSales: Number(data.jumlah_sales),
+    leadtimeJam: data.leadtime_jam ?? 0,
+    leadtimeMenit: data.leadtime_menit ?? 0,
+    specialTools: data.special_tools ?? "",
+    langkahPengerjaan: data.langkah_pengerjaan ?? "",
   };
 }
 
@@ -303,6 +319,10 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
       model_kendaraan: entry.modelKendaraan,
       jenis_pekerjaan: entry.jenisPekerjaan,
       jumlah_sales: entry.jumlahSales,
+      leadtime_jam: entry.leadtimeJam ?? 0,
+      leadtime_menit: entry.leadtimeMenit ?? 0,
+      special_tools: entry.specialTools ?? "",
+      langkah_pengerjaan: entry.langkahPengerjaan ?? "",
     })
     .eq("id", id)
     .select()
@@ -315,6 +335,10 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
     modelKendaraan: data.model_kendaraan,
     jenisPekerjaan: data.jenis_pekerjaan,
     jumlahSales: Number(data.jumlah_sales),
+    leadtimeJam: data.leadtime_jam ?? 0,
+    leadtimeMenit: data.leadtime_menit ?? 0,
+    specialTools: data.special_tools ?? "",
+    langkahPengerjaan: data.langkah_pengerjaan ?? "",
   };
 }
 
@@ -528,4 +552,66 @@ export async function downloadDataExcel(params: { entries: SalesEntry[]; monthly
   a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// --- Analitik untuk Dashboard Analisa ---
+
+/** Konversi leadtime ke total menit */
+export function toTotalMenit(jam: number, menit: number): number {
+  return (jam * 60) + menit;
+}
+
+/** Format menit ke string "Xj Ym" */
+export function formatLeadtime(jam: number, menit: number): string {
+  if (jam === 0 && menit === 0) return "-";
+  if (jam === 0) return `${menit}m`;
+  if (menit === 0) return `${jam}j`;
+  return `${jam}j ${menit}m`;
+}
+
+/** Rata-rata leadtime (menit) per jenis pekerjaan */
+export function getLeadtimeByPekerjaan(entries: SalesEntry[]) {
+  const map: Record<string, { total: number; count: number }> = {};
+  entries.forEach((e) => {
+    const totalMenit = toTotalMenit(e.leadtimeJam ?? 0, e.leadtimeMenit ?? 0);
+    if (totalMenit === 0) return;
+    const jenisList = splitJenisPekerjaan(e.jenisPekerjaan);
+    jenisList.forEach((j) => {
+      if (!map[j]) map[j] = { total: 0, count: 0 };
+      map[j].total += totalMenit;
+      map[j].count += 1;
+    });
+  });
+  return Object.entries(map)
+    .map(([name, { total, count }]) => ({ name, avgMenit: Math.round(total / count), count }))
+    .sort((a, b) => b.avgMenit - a.avgMenit)
+    .slice(0, 12);
+}
+
+/** Daftar special tools yang paling sering dipakai */
+export function getTopSpecialTools(entries: SalesEntry[], limit = 12) {
+  const map: Record<string, number> = {};
+  entries.forEach((e) => {
+    if (!e.specialTools) return;
+    e.specialTools.split(" | ").map(s => s.trim()).filter(Boolean).forEach((tool) => {
+      map[tool] = (map[tool] || 0) + 1;
+    });
+  });
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([name, value]) => ({ name, value }));
+}
+
+/** Rata-rata leadtime keseluruhan dalam menit */
+export function getAvgLeadtimeMenit(entries: SalesEntry[]): number {
+  const valid = entries.filter(e => toTotalMenit(e.leadtimeJam ?? 0, e.leadtimeMenit ?? 0) > 0);
+  if (valid.length === 0) return 0;
+  const total = valid.reduce((s, e) => s + toTotalMenit(e.leadtimeJam ?? 0, e.leadtimeMenit ?? 0), 0);
+  return Math.round(total / valid.length);
+}
+
+/** Entry yang punya langkah pengerjaan */
+export function getEntriesWithLangkah(entries: SalesEntry[]) {
+  return entries.filter(e => e.langkahPengerjaan && e.langkahPengerjaan.trim().length > 0);
 }

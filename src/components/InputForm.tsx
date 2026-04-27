@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { CalendarIcon, Plus, X, Clock, Wrench, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { JENIS_PEKERJAAN_GROUPS, MEREK_KENDARAAN, MODEL_BY_MEREK, saveEntry, updateEntry, type SalesEntry } from "@/lib/data";
 import { toast } from "sonner";
@@ -34,6 +35,17 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const [saving, setSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
+  // Leadtime
+  const [leadtimeJam, setLeadtimeJam] = useState("");
+  const [leadtimeMenit, setLeadtimeMenit] = useState("");
+
+  // Special Tools
+  const [specialToolsList, setSpecialToolsList] = useState<string[]>([]);
+  const [specialToolInput, setSpecialToolInput] = useState("");
+
+  // Langkah Pengerjaan
+  const [langkahPengerjaan, setLangkahPengerjaan] = useState("");
+
   useEffect(() => {
     if (open && editData) {
       setDate(new Date(editData.tanggal));
@@ -41,7 +53,16 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       setModel(editData.modelKendaraan);
       setJenisList(editData.jenisPekerjaan.split(" | ").map((s) => s.trim()));
       setSales(new Intl.NumberFormat("id-ID").format(editData.jumlahSales));
-      setSelectedCategory(""); // Reset category on edit
+      setSelectedCategory("");
+      // Field baru
+      setLeadtimeJam(editData.leadtimeJam ? String(editData.leadtimeJam) : "");
+      setLeadtimeMenit(editData.leadtimeMenit ? String(editData.leadtimeMenit) : "");
+      setSpecialToolsList(
+        editData.specialTools
+          ? editData.specialTools.split(" | ").map(s => s.trim()).filter(Boolean)
+          : []
+      );
+      setLangkahPengerjaan(editData.langkahPengerjaan ?? "");
     } else if (open && !editData) {
       setDate(undefined);
       setMerek("");
@@ -50,6 +71,11 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       setJenisList([]);
       setJenisSelect("");
       setSales("");
+      setLeadtimeJam("");
+      setLeadtimeMenit("");
+      setSpecialToolsList([]);
+      setSpecialToolInput("");
+      setLangkahPengerjaan("");
     }
   }, [open, editData]);
 
@@ -64,11 +90,22 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
     setJenisList((prev) => prev.filter((j) => j !== val));
   };
 
+  const addSpecialTool = () => {
+    const trimmed = specialToolInput.trim();
+    if (!trimmed) return;
+    setSpecialToolsList((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
+    setSpecialToolInput("");
+  };
+
+  const removeSpecialTool = (val: string) => {
+    setSpecialToolsList((prev) => prev.filter((t) => t !== val));
+  };
+
   const filteredJobs = JENIS_PEKERJAAN_GROUPS.find((g) => g.category === selectedCategory)?.items || [];
 
   const handleSubmit = async () => {
     if (!date || !merek || !model || jenisList.length === 0 || !sales) {
-      toast.error("Semua field harus diisi!");
+      toast.error("Semua field wajib harus diisi!");
       return;
     }
     const amount = parseInt(sales.replace(/\D/g, ""), 10);
@@ -76,6 +113,10 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       toast.error("Jumlah sales harus berupa angka positif!");
       return;
     }
+
+    const jamVal = parseInt(leadtimeJam || "0", 10);
+    const menitVal = parseInt(leadtimeMenit || "0", 10);
+
     setSaving(true);
     try {
       const payload = {
@@ -84,6 +125,10 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
         modelKendaraan: model,
         jenisPekerjaan: jenisList.join(" | "),
         jumlahSales: amount,
+        leadtimeJam: isNaN(jamVal) ? 0 : jamVal,
+        leadtimeMenit: isNaN(menitVal) ? 0 : menitVal,
+        specialTools: specialToolsList.join(" | "),
+        langkahPengerjaan: langkahPengerjaan.trim(),
       };
 
       if (editData?.id) {
@@ -119,13 +164,15 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">
             {editData ? "Edit Pekerjaan Harian" : "Input Pekerjaan Harian"}
           </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
+
+          {/* Tanggal */}
           <div className="grid gap-2">
             <Label>Tanggal</Label>
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
@@ -153,6 +200,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
             </Popover>
           </div>
 
+          {/* Merek Kendaraan */}
           <div className="grid gap-2">
             <Label>Merek Kendaraan</Label>
             <Select
@@ -173,6 +221,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
             </Select>
           </div>
 
+          {/* Model Kendaraan */}
           <div className="grid gap-2">
             <Label>Model Kendaraan</Label>
             <Select value={model} onValueChange={setModel} disabled={!merek}>
@@ -187,6 +236,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
             </Select>
           </div>
 
+          {/* Kategori Sistem */}
           <div className="grid gap-2">
             <Label>Kategori Sistem</Label>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -203,6 +253,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
             </Select>
           </div>
 
+          {/* Jenis Pekerjaan */}
           <div className="grid gap-2">
             <Label>Jenis Pekerjaan</Label>
             <Select
@@ -233,7 +284,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
                     <button
                       type="button"
                       onClick={() => removeJenis(j)}
-                      className="ml-1 rounded-full p-0.5 hover:bg-secondary/70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      className="ml-1 rounded-full p-0.5 hover:bg-secondary/70 focus:outline-none"
                       aria-label={`Hapus ${j}`}
                     >
                       <X className="h-3 w-3" />
@@ -244,12 +295,114 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
             )}
           </div>
 
+          {/* Jumlah Sales */}
           <div className="grid gap-2">
             <Label>Jumlah Sales (IDR)</Label>
             <Input
               placeholder="contoh: 500000"
               value={sales}
               onChange={(e) => setSales(formatSalesInput(e.target.value))}
+            />
+          </div>
+
+          {/* ─── FIELD BARU ─── */}
+
+          {/* Leadtime Pengerjaan */}
+          <div className="grid gap-2">
+            <Label className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              Leadtime Pengerjaan <span className="text-muted-foreground text-xs font-normal">(opsional)</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={leadtimeJam}
+                  onChange={(e) => setLeadtimeJam(e.target.value)}
+                  className="pr-10"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">jam</span>
+              </div>
+              <div className="relative">
+                <Input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="0"
+                  value={leadtimeMenit}
+                  onChange={(e) => setLeadtimeMenit(e.target.value)}
+                  className="pr-14"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">menit</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Special Tools */}
+          <div className="grid gap-2">
+            <Label className="flex items-center gap-1.5">
+              <Wrench className="h-4 w-4 text-muted-foreground" />
+              Special Tools <span className="text-muted-foreground text-xs font-normal">(opsional)</span>
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Nama special tool..."
+                value={specialToolInput}
+                onChange={(e) => setSpecialToolInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addSpecialTool();
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={addSpecialTool}
+                disabled={!specialToolInput.trim()}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {specialToolsList.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {specialToolsList.map((tool) => (
+                  <span
+                    key={tool}
+                    className="inline-flex items-center rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 text-xs"
+                  >
+                    <Wrench className="h-3 w-3 mr-1 opacity-70" />
+                    <span className="max-w-[180px] truncate">{tool}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSpecialTool(tool)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
+                      aria-label={`Hapus ${tool}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Langkah Pengerjaan */}
+          <div className="grid gap-2">
+            <Label className="flex items-center gap-1.5">
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              Langkah Pengerjaan <span className="text-muted-foreground text-xs font-normal">(opsional)</span>
+            </Label>
+            <Textarea
+              placeholder="Tulis langkah-langkah detail pengerjaan di sini..."
+              value={langkahPengerjaan}
+              onChange={(e) => setLangkahPengerjaan(e.target.value)}
+              className="min-h-[120px] resize-y text-sm"
             />
           </div>
 

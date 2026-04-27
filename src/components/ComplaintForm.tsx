@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,12 +12,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { MEREK_KENDARAAN, MODEL_BY_MEREK, COMPLAINT_TYPES, saveComplaint, type ComplaintEntry } from "@/lib/data";
 import { toast } from "sonner";
 
-interface Props {
-  onSuccess: () => void;
+interface PrefillData {
+  merekKendaraan: string;
+  modelKendaraan: string;
 }
 
-export function ComplaintForm({ onSuccess }: Props) {
-  const [open, setOpen] = useState(false);
+interface Props {
+  onSuccess: () => void;
+  prefillData?: PrefillData;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp, onOpenChange }: Props) {
+  const isControlled = openProp !== undefined;
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = isControlled ? openProp! : openInternal;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setOpenInternal(val);
+    onOpenChange?.(val);
+  };
+
   const [date, setDate] = useState<Date>(new Date());
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
   const [model, setModel] = useState("");
@@ -25,6 +41,22 @@ export function ComplaintForm({ onSuccess }: Props) {
   const [keterangan, setKeterangan] = useState("");
   const [saving, setSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // Pre-fill data kendaraan saat dialog dibuka
+  useEffect(() => {
+    if (open && prefillData) {
+      setMerek(prefillData.merekKendaraan as (typeof MEREK_KENDARAAN)[number]);
+      setModel(prefillData.modelKendaraan);
+    }
+    if (!open) {
+      // Reset form saat dialog ditutup
+      setMerek("");
+      setModel("");
+      setJenisComplain("");
+      setKeterangan("");
+      setDate(new Date());
+    }
+  }, [open, prefillData]);
 
   const handleSubmit = async () => {
     if (!date || !merek || !model || !jenisComplain) {
@@ -44,11 +76,6 @@ export function ComplaintForm({ onSuccess }: Props) {
       toast.success("Complaint berhasil disimpan!");
       setOpen(false);
       onSuccess();
-      // Reset form
-      setMerek("");
-      setModel("");
-      setJenisComplain("");
-      setKeterangan("");
     } catch (err) {
       console.error(err);
       toast.error("Gagal menyimpan complaint. Pastikan tabel 'complaints' sudah ada di Supabase.");
@@ -60,10 +87,12 @@ export function ComplaintForm({ onSuccess }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-white">
-          <Plus className="h-4 w-4" />
-          Input Complain Baru
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" className="gap-2 w-full sm:w-auto border-accent text-accent hover:bg-accent hover:text-white">
+            <Plus className="h-4 w-4" />
+            Input Complain Baru
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

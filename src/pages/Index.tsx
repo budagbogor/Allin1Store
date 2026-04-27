@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle } from "lucide-react";
+import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle, MessageSquarePlus, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { InputForm } from "@/components/InputForm";
+import { ComplaintForm } from "@/components/ComplaintForm";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
 import {
   getEntries,
@@ -30,6 +31,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<SalesEntry | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string } | null>(null);
+  const [isComplaintOpen, setIsComplaintOpen] = useState(false);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -73,6 +76,14 @@ export default function Dashboard() {
     setIsEditOpen(true);
   };
 
+  const handleOpenComplaint = (entry: SalesEntry) => {
+    setComplaintPrefill({
+      merekKendaraan: entry.merekKendaraan,
+      modelKendaraan: entry.modelKendaraan,
+    });
+    setIsComplaintOpen(true);
+  };
+
   const handleDownload = async () => {
     if (loading) return;
     if (allEntries.length === 0) {
@@ -101,6 +112,12 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex w-full flex-col sm:w-auto sm:flex-row gap-2">
+            <Link to="/analisa" className="w-full sm:w-auto">
+              <Button variant="secondary" className="gap-2 w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none">
+                <BarChart3 className="h-4 w-4" />
+                Menu Analisa
+              </Button>
+            </Link>
             <Link to="/complaints" className="w-full sm:w-auto">
               <Button variant="secondary" className="gap-2 w-full bg-accent text-white hover:bg-accent/90 border-none">
                 <AlertTriangle className="h-4 w-4" />
@@ -126,6 +143,18 @@ export default function Dashboard() {
           if (!open) setEditingEntry(null);
         }}
         onSuccess={fetchEntries}
+      />
+
+      {/* Complaint Form Modal (dipicu dari tabel) */}
+      <ComplaintForm
+        prefillData={complaintPrefill ?? undefined}
+        open={isComplaintOpen}
+        onOpenChange={(open) => {
+          setIsComplaintOpen(open);
+          if (!open) setComplaintPrefill(null);
+        }}
+        onSuccess={() => {}}
+        trigger={<span />}
       />
 
       <main className="container mx-auto flex-1 py-5 sm:py-6 px-3 sm:px-4 space-y-5 sm:space-y-6">
@@ -304,7 +333,7 @@ export default function Dashboard() {
                         <TableHead>Model</TableHead>
                         <TableHead>Jenis Pekerjaan</TableHead>
                         <TableHead className="text-right">Sales</TableHead>
-                        <TableHead className="w-20"></TableHead>
+                        <TableHead className="w-28"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -321,6 +350,15 @@ export default function Dashboard() {
                             <div className="flex items-center gap-1">
                               <Button variant="ghost" size="icon" onClick={() => handleEdit(e)}>
                                 <Edit2 className="h-4 w-4 text-primary" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Input Complain"
+                                onClick={() => handleOpenComplaint(e)}
+                                className="hover:bg-accent/10 hover:text-accent"
+                              >
+                                <MessageSquarePlus className="h-4 w-4 text-accent" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
