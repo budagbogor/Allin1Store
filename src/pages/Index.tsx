@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { InputForm } from "@/components/InputForm";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
+import { StoreSalesDialog } from "@/components/StoreSalesDialog";
 import {
   getEntries,
   formatIDR,
@@ -19,6 +20,7 @@ import {
   splitJenisPekerjaan,
   downloadDataExcel,
   type SalesEntry,
+  type MonthlyReport,
 } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -41,11 +43,16 @@ export default function Dashboard() {
   const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string } | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
 
   const fetchEntries = useCallback(async () => {
     try {
-      const data = await getEntries();
-      setAllEntries(data);
+      const [entriesData, reportsData] = await Promise.all([
+        getEntries(),
+        getMonthlyReports(),
+      ]);
+      setAllEntries(entriesData);
+      setMonthlyReports(reportsData);
     } catch (err) {
       console.error(err);
       toast.error("Gagal memuat data dari database.");
@@ -72,6 +79,17 @@ export default function Dashboard() {
   const topPekerjaan = getTopPekerjaan(filteredEntries);
   const topModel = getTopModelKendaraan(filteredEntries, 10);
   const unitCount = filteredEntries.length;
+
+  // Hitung persentase terhadap total sales toko
+  let currentTotalSalesToko = 0;
+  if (selectedMonth === "all") {
+    currentTotalSalesToko = monthlyReports.reduce((sum, r) => sum + (r.totalSalesToko || 0), 0);
+  } else {
+    const monthIdx = parseInt(selectedMonth);
+    const report = monthlyReports.find(r => r.bulan === monthIdx && r.tahun === 2026);
+    currentTotalSalesToko = report?.totalSalesToko || 0;
+  }
+  const salesPercentage = currentTotalSalesToko > 0 ? (totalSales / currentTotalSalesToko) * 100 : 0;
 
   const chartData = BULAN.map((name, i) => ({ name, sales: monthlySales[i] }));
 
@@ -140,7 +158,8 @@ export default function Dashboard() {
               </Button>
             </Link>
             <InputForm onSuccess={fetchEntries} />
-            <MonthlyReportDialog />
+            <StoreSalesDialog onSuccess={fetchEntries} />
+            <MonthlyReportDialog onSuccess={fetchEntries} />
             <Button variant="secondary" className="gap-2 w-full sm:w-auto" onClick={handleDownload} disabled={loading}>
               <Download className="h-4 w-4" />
               Download Excel
@@ -253,12 +272,16 @@ export default function Dashboard() {
 
               <Card className="glass-card">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">Progress Target</CardTitle>
-                  <Target className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">% Sales Project</CardTitle>
+                  <BarChart3 className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-heading font-bold mb-2">{progressPct.toFixed(1)}%</div>
-                  <Progress value={progressPct} className="h-3" />
+                  <div className="text-2xl font-heading font-bold">{salesPercentage.toFixed(1)}%</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {currentTotalSalesToko > 0 
+                      ? `vs ${formatIDR(currentTotalSalesToko)} (Toko)` 
+                      : "Total sales toko belum diinput"}
+                  </p>
                 </CardContent>
               </Card>
             </div>

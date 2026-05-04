@@ -235,6 +235,7 @@ export interface MonthlyReport {
   penjelasanPerforma: string;
   kendala: string;
   actionPlan: string;
+  totalSalesToko?: number;
 }
 
 export interface ComplaintEntry {
@@ -356,6 +357,7 @@ export async function getMonthlyReports(): Promise<MonthlyReport[]> {
     penjelasanPerforma: r.penjelasan_performa || "",
     kendala: r.kendala || "",
     actionPlan: r.action_plan || "",
+    totalSalesToko: r.total_sales_toko ? Number(r.total_sales_toko) : 0,
   }));
 }
 
@@ -369,6 +371,7 @@ export async function saveMonthlyReport(report: MonthlyReport) {
         penjelasan_performa: report.penjelasanPerforma,
         kendala: report.kendala,
         action_plan: report.actionPlan,
+        total_sales_toko: report.totalSalesToko,
       },
       { onConflict: "bulan,tahun" }
     );
@@ -523,15 +526,21 @@ export async function downloadDataExcel(params: { entries: SalesEntry[]; monthly
       .map((r) => ({
         Bulan: `${BULAN[r.bulan] ?? r.bulan} ${r.tahun}`,
         Performa: r.penjelasanPerforma,
+        "Total Sales Toko": r.totalSalesToko,
         Kendala: r.kendala,
         "Action Plan": r.actionPlan,
       }));
     const reportWs = XLSX.utils.json_to_sheet(reportRows, {
-      header: ["Bulan", "Performa", "Kendala", "Action Plan"],
+      header: ["Bulan", "Total Sales Toko", "Performa", "Kendala", "Action Plan"],
     });
-    reportWs["!cols"] = [{ wch: 14 }, { wch: 40 }, { wch: 40 }, { wch: 40 }];
+    reportWs["!cols"] = [{ wch: 14 }, { wch: 18 }, { wch: 40 }, { wch: 40 }, { wch: 40 }];
     if (reportRows.length > 0) {
-      reportWs["!autofilter"] = { ref: `A1:D${reportRows.length + 1}` };
+      reportWs["!autofilter"] = { ref: `A1:E${reportRows.length + 1}` };
+      for (let r = 2; r <= reportRows.length + 1; r++) {
+        const cellAddr = `B${r}`;
+        const cell = reportWs[cellAddr];
+        if (cell) cell.z = '"Rp" #,##0';
+      }
     }
     XLSX.utils.book_append_sheet(wb, reportWs, "Monthly Reports");
   }

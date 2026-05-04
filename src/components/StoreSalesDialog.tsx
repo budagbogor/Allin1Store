@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText } from "lucide-react";
+import { Calculator } from "lucide-react";
 import { BULAN, getMonthlyReports, saveMonthlyReport } from "@/lib/data";
 import { toast } from "sonner";
 
-export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
+export function StoreSalesDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const [bulan, setBulan] = useState("");
-  const [performa, setPerforma] = useState("");
-  const [kendala, setKendala] = useState("");
-  const [actionPlan, setActionPlan] = useState("");
+  const [totalSalesToko, setTotalSalesToko] = useState("");
   const [saving, setSaving] = useState(false);
+  const [currentReport, setCurrentReport] = useState<any>(null);
 
   const handleLoad = async (val: string) => {
     setBulan(val);
@@ -23,16 +22,14 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
       const reports = await getMonthlyReports();
       const existing = reports.find((r) => r.bulan === idx && r.tahun === 2026);
       if (existing) {
-        setPerforma(existing.penjelasanPerforma);
-        setKendala(existing.kendala);
-        setActionPlan(existing.actionPlan);
+        setTotalSalesToko(existing.totalSalesToko ? String(existing.totalSalesToko) : "");
+        setCurrentReport(existing);
       } else {
-        setPerforma("");
-        setKendala("");
-        setActionPlan("");
+        setTotalSalesToko("");
+        setCurrentReport(null);
       }
     } catch {
-      toast.error("Gagal memuat laporan.");
+      toast.error("Gagal memuat data sales.");
     }
   };
 
@@ -43,18 +40,21 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
     }
     setSaving(true);
     try {
+      // Kita tetap menggunakan saveMonthlyReport tapi hanya mengupdate totalSalesToko
+      // Jika report belum ada, kita buat baru dengan field lainnya kosong
       await saveMonthlyReport({
         bulan: parseInt(bulan, 10),
         tahun: 2026,
-        penjelasanPerforma: performa,
-        kendala,
-        actionPlan,
+        penjelasanPerforma: currentReport?.penjelasanPerforma || "",
+        kendala: currentReport?.kendala || "",
+        actionPlan: currentReport?.actionPlan || "",
+        totalSalesToko: totalSalesToko ? Number(totalSalesToko) : 0,
       });
-      toast.success("Laporan bulanan berhasil disimpan!");
+      toast.success("Total sales toko berhasil disimpan!");
       setOpen(false);
       if (onSuccess) onSuccess();
     } catch {
-      toast.error("Gagal menyimpan laporan.");
+      toast.error("Gagal menyimpan data sales.");
     } finally {
       setSaving(false);
     }
@@ -63,14 +63,14 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 w-full sm:w-auto">
-          <FileText className="h-4 w-4" />
-          Laporan Bulanan
+        <Button variant="outline" className="gap-2 w-full sm:w-auto bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200">
+          <Calculator className="h-4 w-4" />
+          Input Sales Toko
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Laporan Bulanan 2026</DialogTitle>
+          <DialogTitle className="text-xl">Input Total Sales Toko 2026</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
@@ -85,19 +85,19 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label>Penjelasan Performa</Label>
-            <Textarea rows={3} value={performa} onChange={(e) => setPerforma(e.target.value)} placeholder="Jelaskan performa bulan ini..." />
+            <Label>Total Sales Toko (IDR)</Label>
+            <Input 
+              type="number" 
+              value={totalSalesToko} 
+              onChange={(e) => setTotalSalesToko(e.target.value)} 
+              placeholder="Masukkan total sales seluruh kategori..." 
+            />
+            <p className="text-[10px] text-muted-foreground italic">
+              *Angka ini digunakan sebagai pembanding (denominator) untuk menghitung % kontribusi project.
+            </p>
           </div>
-          <div className="grid gap-2">
-            <Label>Kendala</Label>
-            <Textarea rows={3} value={kendala} onChange={(e) => setKendala(e.target.value)} placeholder="Kendala yang dihadapi..." />
-          </div>
-          <div className="grid gap-2">
-            <Label>Action Plan</Label>
-            <Textarea rows={3} value={actionPlan} onChange={(e) => setActionPlan(e.target.value)} placeholder="Rencana tindak lanjut..." />
-          </div>
-          <Button onClick={handleSave} disabled={saving} className="w-full mt-2">
-            {saving ? "Menyimpan..." : "Simpan Laporan"}
+          <Button onClick={handleSave} disabled={saving} className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700">
+            {saving ? "Menyimpan..." : "Simpan Sales Toko"}
           </Button>
         </div>
       </DialogContent>
