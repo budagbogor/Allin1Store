@@ -25,6 +25,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import logoMobeng from "@/assets/logomobeng.jpg";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Dashboard() {
   const [allEntries, setAllEntries] = useState<SalesEntry[]>([]);
@@ -33,6 +40,7 @@ export default function Dashboard() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string } | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -50,13 +58,20 @@ export default function Dashboard() {
     fetchEntries();
   }, [fetchEntries]);
 
-  const totalSales = allEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
-  const progressPct = Math.min((totalSales / TARGET_TAHUNAN) * 100, 100);
-  const sisaTarget = Math.max(TARGET_TAHUNAN - totalSales, 0);
+  const filteredEntries = allEntries.filter((e) => {
+    if (selectedMonth === "all") return true;
+    const date = new Date(e.tanggal);
+    return date.getMonth() === parseInt(selectedMonth);
+  });
+
+  const totalSales = filteredEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
+  const totalSalesAllTime = allEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
+  const progressPct = Math.min((totalSalesAllTime / TARGET_TAHUNAN) * 100, 100);
+  const sisaTarget = Math.max(TARGET_TAHUNAN - totalSalesAllTime, 0);
   const monthlySales = getMonthlySales(allEntries);
-  const topPekerjaan = getTopPekerjaan(allEntries);
-  const topModel = getTopModelKendaraan(allEntries, 10);
-  const unitCount = allEntries.length;
+  const topPekerjaan = getTopPekerjaan(filteredEntries);
+  const topModel = getTopModelKendaraan(filteredEntries, 10);
+  const unitCount = filteredEntries.length;
 
   const chartData = BULAN.map((name, i) => ({ name, sales: monthlySales[i] }));
 
@@ -162,16 +177,44 @@ export default function Dashboard() {
           <p className="text-center text-muted-foreground py-12">Memuat data...</p>
         ) : (
           <>
+            {/* Filter Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card p-4 rounded-xl border shadow-sm">
+              <div>
+                <h2 className="text-lg font-semibold font-heading">Filter Indikator</h2>
+                <p className="text-sm text-muted-foreground">Pilih bulan untuk melihat performa spesifik</p>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Periode:</span>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-full sm:w-[180px] bg-background">
+                    <SelectValue placeholder="Pilih Bulan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Akumulasi 2026</SelectItem>
+                    {BULAN.map((name, i) => (
+                      <SelectItem key={name} value={i.toString()}>
+                        {name} 2026
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <Card className="glass-card">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">Total Sales 2026</CardTitle>
+                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">
+                    Sales {selectedMonth === "all" ? "2026" : BULAN[parseInt(selectedMonth)]}
+                  </CardTitle>
                   <TrendingUp className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-heading font-bold">{formatIDR(totalSales)}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{progressPct.toFixed(1)}% dari target</p>
+                  {selectedMonth === "all" && (
+                    <p className="text-xs text-muted-foreground mt-1">{progressPct.toFixed(1)}% dari target</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -198,8 +241,10 @@ export default function Dashboard() {
 
               <Card className="glass-card">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">Unit Entry</CardTitle>
-                  <Card className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-sm font-medium font-body text-muted-foreground">
+                    Unit {selectedMonth === "all" ? "Entry" : BULAN[parseInt(selectedMonth)]}
+                  </CardTitle>
+                  <Car className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-heading font-bold">{unitCount}</div>
@@ -337,7 +382,7 @@ export default function Dashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {allEntries.slice(0, 20).map((e) => (
+                      {filteredEntries.slice(0, 20).map((e) => (
                         <TableRow key={e.id}>
                           <TableCell className="whitespace-nowrap">{e.tanggal}</TableCell>
                           <TableCell>{e.merekKendaraan}</TableCell>
