@@ -158,7 +158,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
     <Dialog open={open} onOpenChange={setOpen}>
       {!editData && (
         <DialogTrigger asChild>
-          <Button className="gap-2 w-full sm:w-auto">
+          <Button className="gap-2 w-full bg-primary hover:bg-primary/90 shadow-md transition-all duration-300">
             <Plus className="h-4 w-4" />
             Input Data Baru
           </Button>

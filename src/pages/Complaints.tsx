@@ -59,7 +59,9 @@ export default function ComplaintsPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
+            <Link to="/" className="transition-transform hover:scale-105 active:scale-95">
+              <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
+            </Link>
             <div>
               <h1 className="text-xl text-white font-heading">Complaint Monitoring</h1>
               <p className="text-slate-400 text-xs font-body">Paska Instalasi & Service</p>

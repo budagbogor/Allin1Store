@@ -162,7 +162,9 @@ export default function AnalisaPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
+            <Link to="/" className="transition-transform hover:scale-105 active:scale-95">
+              <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
+            </Link>
             <div>
               <h1 className="text-xl text-white font-heading">Dashboard Analisa Teknis</h1>
               <p className="text-indigo-300 text-xs font-body">Leadtime · Special Tools · Langkah Pengerjaan</p>

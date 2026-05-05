@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle, MessageSquarePlus, BarChart3 } from "lucide-react";
+import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle, MessageSquarePlus, BarChart3, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { InputForm } from "@/components/InputForm";
@@ -34,6 +34,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const ReportContent = ({ report, showMonth = true }: { report: MonthlyReport, showMonth?: boolean }) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {showMonth && (
+      <div className="col-span-full border-b pb-2 mb-2">
+        <h3 className="font-bold text-primary">{BULAN[report.bulan]} 2026</h3>
+      </div>
+    )}
+    <div className="space-y-2">
+      <h4 className="font-bold text-[10px] text-primary uppercase tracking-widest flex items-center gap-2">
+        <div className="w-1.5 h-3 bg-primary rounded-full" />
+        Performa
+      </h4>
+      <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+        {report.penjelasanPerforma || "-"}
+      </p>
+    </div>
+    <div className="space-y-2">
+      <h4 className="font-bold text-[10px] text-rose-500 uppercase tracking-widest flex items-center gap-2">
+        <div className="w-1.5 h-3 bg-rose-500 rounded-full" />
+        Kendala
+      </h4>
+      <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+        {report.kendala || "-"}
+      </p>
+    </div>
+    <div className="space-y-2">
+      <h4 className="font-bold text-[10px] text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+        <div className="w-1.5 h-3 bg-emerald-600 rounded-full" />
+        Action Plan
+      </h4>
+      <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+        {report.actionPlan || "-"}
+      </p>
+    </div>
+  </div>
+);
 
 export default function Dashboard() {
   const [allEntries, setAllEntries] = useState<SalesEntry[]>([]);
@@ -136,36 +181,76 @@ export default function Dashboard() {
     <div className="min-h-dvh bg-background flex flex-col">
       {/* Header */}
       <header className="gradient-primary px-4 sm:px-6 py-4 sm:py-5 shadow-lg">
-        <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <img src={logoMobeng} alt="Mobeng Logo" className="h-12 w-12 rounded-lg object-cover ring-2 ring-primary-foreground shadow-md" />
-            <div>
-              <h1 className="text-2xl text-primary-foreground">All in 1 Store 2026</h1>
-              <p className="text-primary-foreground/70 text-sm font-body">Mobeng Harapan Indah — Dashboard Tracking</p>
+          <div className="flex w-full items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="transition-transform hover:scale-105 active:scale-95 shrink-0">
+                <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover ring-2 ring-primary-foreground/50" />
+              </Link>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-base sm:text-lg font-bold text-white leading-tight">All in 1 Store</h1>
+                <p className="text-[9px] sm:text-[10px] text-primary-foreground/70 uppercase tracking-wider">Mobeng Harapan Indah</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link to="/analisa">
+                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 gap-2 h-9 font-medium">
+                  <BarChart3 className="h-4 w-4 text-indigo-300" />
+                  <span className="hidden sm:inline">Analisa</span>
+                </Button>
+              </Link>
+              
+              <div className="h-6 w-px bg-white/20 mx-1 hidden sm:block" />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="bg-red-600 text-white hover:bg-red-700 h-9 px-2 animate-pulse hover:animate-none shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400/50"
+                  >
+                    <ChevronDown className="h-5 w-5" strokeWidth={3} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2">
+                  <DropdownMenuLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+                    Aksi & Menu
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="my-1" />
+                  
+                  <div className="p-1">
+                    <InputForm onSuccess={fetchEntries} />
+                  </div>
+                  
+                  <DropdownMenuSeparator className="my-1" />
+
+                  <DropdownMenuItem asChild className="focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
+                    <Link to="/complaints" className="flex items-center gap-2 w-full px-2 py-1.5">
+                      <AlertTriangle className="h-4 w-4 text-rose-500" />
+                      <span>Complain</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="my-1" />
+                  
+                  <div className="space-y-1">
+                    <StoreSalesDialog onSuccess={fetchEntries} />
+                    <MonthlyReportDialog onSuccess={fetchEntries} />
+                  </div>
+                  
+                  <DropdownMenuSeparator className="my-1" />
+                  
+                  <DropdownMenuItem 
+                    onClick={handleDownload} 
+                    className="flex items-center gap-2 px-2 py-1.5 cursor-pointer focus:bg-slate-100"
+                  >
+                    <Download className="h-4 w-4 text-slate-500" />
+                    <span>Download Excel</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-          <div className="flex w-full flex-col sm:w-auto sm:flex-row gap-2">
-            <Link to="/analisa" className="w-full sm:w-auto">
-              <Button variant="secondary" className="gap-2 w-full bg-indigo-600 text-white hover:bg-indigo-700 border-none">
-                <BarChart3 className="h-4 w-4" />
-                Menu Analisa
-              </Button>
-            </Link>
-            <Link to="/complaints" className="w-full sm:w-auto">
-              <Button variant="secondary" className="gap-2 w-full bg-accent text-white hover:bg-accent/90 border-none">
-                <AlertTriangle className="h-4 w-4" />
-                Menu Complain
-              </Button>
-            </Link>
-            <InputForm onSuccess={fetchEntries} />
-            <StoreSalesDialog onSuccess={fetchEntries} />
-            <MonthlyReportDialog onSuccess={fetchEntries} />
-            <Button variant="secondary" className="gap-2 w-full sm:w-auto" onClick={handleDownload} disabled={loading}>
-              <Download className="h-4 w-4" />
-              Download Excel
-            </Button>
-          </div>
-        </div>
       </header>
 
       {/* Edit Form Modal */}
@@ -382,6 +467,58 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+
+            {/* Monthly Report Summary Section */}
+            <div className="space-y-4">
+              {selectedMonth !== "all" ? (
+                /* Tampilan Single Month */
+                <Card className="glass-card border-l-4 border-l-primary overflow-hidden">
+                  <CardHeader className="bg-primary/5 py-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      Analisa Performa Bulanan: {BULAN[parseInt(selectedMonth)]} 2026
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    {(() => {
+                      const report = monthlyReports.find(r => r.bulan === parseInt(selectedMonth) && r.tahun === 2026);
+                      if (!report || (!report.penjelasanPerforma && !report.kendala && !report.actionPlan)) {
+                        return <p className="text-muted-foreground text-sm italic">Belum ada penjelasan laporan untuk bulan ini.</p>;
+                      }
+                      return <ReportContent report={report} showMonth={false} />;
+                    })()}
+                  </CardContent>
+                </Card>
+              ) : (
+                /* Tampilan Akumulasi (Semua Laporan) */
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 px-1">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <h3 className="font-bold text-lg">Riwayat Analisa Performa 2026</h3>
+                  </div>
+                  {monthlyReports
+                    .filter(r => r.penjelasanPerforma || r.kendala || r.actionPlan)
+                    .sort((a, b) => b.bulan - a.bulan) // Urutkan dari bulan terbaru
+                    .map((report) => (
+                      <Card key={report.bulan} className="glass-card border-l-4 border-l-primary/40 overflow-hidden">
+                        <CardHeader className="bg-slate-50 dark:bg-slate-900/50 py-2 border-b">
+                          <CardTitle className="text-sm font-bold text-primary">
+                            {BULAN[report.bulan]} 2026
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <ReportContent report={report} showMonth={false} />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  {monthlyReports.filter(r => r.penjelasanPerforma || r.kendala || r.actionPlan).length === 0 && (
+                    <Card className="glass-card p-8 text-center border-dashed">
+                      <p className="text-muted-foreground text-sm">Belum ada laporan bulanan yang diinput untuk tahun 2026.</p>
+                    </Card>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Recent Entries Table */}
