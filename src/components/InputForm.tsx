@@ -27,10 +27,17 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
 
   const [date, setDate] = useState<Date>();
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
+  const [merekManual, setMerekManual] = useState("");
+  const [isCustomMerek, setIsCustomMerek] = useState(false);
   const [model, setModel] = useState("");
+  const [modelManual, setModelManual] = useState("");
+  const [isCustomModel, setIsCustomModel] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [customCategory, setCustomCategory] = useState("");
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [jenisList, setJenisList] = useState<string[]>([]);
   const [jenisSelect, setJenisSelect] = useState("");
+  const [jenisManualInput, setJenisManualInput] = useState("");
   const [sales, setSales] = useState("");
   const [saving, setSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -49,11 +56,35 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   useEffect(() => {
     if (open && editData) {
       setDate(new Date(editData.tanggal));
-      setMerek(editData.merekKendaraan as any);
-      setModel(editData.modelKendaraan);
+      // Check if merek is in the predefined list
+      const merekInList = MEREK_KENDARAAN.includes(editData.merekKendaraan as any);
+      if (merekInList) {
+        setMerek(editData.merekKendaraan as any);
+        setMerekManual("");
+        setIsCustomMerek(false);
+      } else {
+        setMerek("");
+        setMerekManual(editData.merekKendaraan);
+        setIsCustomMerek(true);
+      }
+      // Check if model is in the predefined list
+      const modelsForMerek = merekInList ? MODEL_BY_MEREK[editData.merekKendaraan as (typeof MEREK_KENDARAAN)[number]] : [];
+      const modelInList = modelsForMerek.includes(editData.modelKendaraan);
+      if (modelInList) {
+        setModel(editData.modelKendaraan);
+        setModelManual("");
+        setIsCustomModel(false);
+      } else {
+        setModel("");
+        setModelManual(editData.modelKendaraan);
+        setIsCustomModel(true);
+      }
       setJenisList(editData.jenisPekerjaan.split(" | ").map((s) => s.trim()));
       setSales(new Intl.NumberFormat("id-ID").format(editData.jumlahSales));
       setSelectedCategory("");
+      setCustomCategory("");
+      setIsCustomCategory(false);
+      setJenisManualInput("");
       // Field baru
       setLeadtimeJam(editData.leadtimeJam ? String(editData.leadtimeJam) : "");
       setLeadtimeMenit(editData.leadtimeMenit ? String(editData.leadtimeMenit) : "");
@@ -66,10 +97,17 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
     } else if (open && !editData) {
       setDate(undefined);
       setMerek("");
+      setMerekManual("");
+      setIsCustomMerek(false);
       setModel("");
+      setModelManual("");
+      setIsCustomModel(false);
       setSelectedCategory("");
+      setCustomCategory("");
+      setIsCustomCategory(false);
       setJenisList([]);
       setJenisSelect("");
+      setJenisManualInput("");
       setSales("");
       setLeadtimeJam("");
       setLeadtimeMenit("");
@@ -104,7 +142,10 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const filteredJobs = JENIS_PEKERJAAN_GROUPS.find((g) => g.category === selectedCategory)?.items || [];
 
   const handleSubmit = async () => {
-    if (!date || !merek || !model || jenisList.length === 0 || !sales) {
+    const finalMerek = isCustomMerek ? merekManual.trim() : merek;
+    const finalModel = isCustomModel ? modelManual.trim() : model;
+
+    if (!date || !finalMerek || !finalModel || jenisList.length === 0 || !sales) {
       toast.error("Semua field wajib harus diisi!");
       return;
     }
@@ -121,8 +162,8 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
     try {
       const payload = {
         tanggal: format(date, "yyyy-MM-dd"),
-        merekKendaraan: merek,
-        modelKendaraan: model,
+        merekKendaraan: finalMerek,
+        modelKendaraan: finalModel,
         jenisPekerjaan: jenisList.join(" | "),
         jumlahSales: amount,
         leadtimeJam: isNaN(jamVal) ? 0 : jamVal,
@@ -203,76 +244,229 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
           {/* Merek Kendaraan */}
           <div className="grid gap-2">
             <Label>Merek Kendaraan</Label>
-            <Select
-              value={merek}
-              onValueChange={(val) => {
-                setMerek(val as (typeof MEREK_KENDARAAN)[number]);
-                setModel("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih merek kendaraan" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {MEREK_KENDARAAN.map((m) => (
-                  <SelectItem key={m} value={m}>{m}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCustomMerek ? (
+              <div className="flex gap-2">
+                <Select
+                  value={merek}
+                  onValueChange={(val) => {
+                    if (val === "__custom__") {
+                      setIsCustomMerek(true);
+                      setMerek("");
+                      setModel("");
+                      setIsCustomModel(true);
+                      setModelManual("");
+                    } else {
+                      setMerek(val as (typeof MEREK_KENDARAAN)[number]);
+                      setModel("");
+                      setIsCustomModel(false);
+                      setModelManual("");
+                    }
+                  }}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Pilih merek kendaraan" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {MEREK_KENDARAAN.filter(m => m !== "Others").map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                    <SelectItem value="__custom__" className="text-primary font-medium">
+                      + Input Manual
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ketik merek kendaraan..."
+                  value={merekManual}
+                  onChange={(e) => setMerekManual(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setIsCustomMerek(false);
+                    setMerekManual("");
+                    setMerek("");
+                    setModel("");
+                    setIsCustomModel(false);
+                    setModelManual("");
+                  }}
+                  title="Kembali ke pilihan"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Model Kendaraan */}
           <div className="grid gap-2">
             <Label>Model Kendaraan</Label>
-            <Select value={model} onValueChange={setModel} disabled={!merek}>
-              <SelectTrigger>
-                <SelectValue placeholder={merek ? "Pilih model kendaraan" : "Pilih merek dulu"} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {(merek ? MODEL_BY_MEREK[merek] : []).map((md) => (
-                  <SelectItem key={md} value={md}>{md}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCustomModel ? (
+              <div className="flex gap-2">
+                <Select value={model} onValueChange={(val) => {
+                  if (val === "__custom__") {
+                    setIsCustomModel(true);
+                    setModel("");
+                    setModelManual("");
+                  } else {
+                    setModel(val);
+                  }
+                }} disabled={!merek && !isCustomMerek}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder={merek ? "Pilih model kendaraan" : "Pilih merek dulu"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {(merek ? MODEL_BY_MEREK[merek] : []).filter(md => md !== "Others").map((md) => (
+                      <SelectItem key={md} value={md}>{md}</SelectItem>
+                    ))}
+                    <SelectItem value="__custom__" className="text-primary font-medium">
+                      + Input Manual
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ketik model kendaraan..."
+                  value={modelManual}
+                  onChange={(e) => setModelManual(e.target.value)}
+                  className="flex-1"
+                />
+                {!isCustomMerek && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setIsCustomModel(false);
+                      setModelManual("");
+                      setModel("");
+                    }}
+                    title="Kembali ke pilihan"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Kategori Sistem */}
           <div className="grid gap-2">
             <Label>Kategori Sistem</Label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih kategori sistem" />
-              </SelectTrigger>
-              <SelectContent>
-                {JENIS_PEKERJAAN_GROUPS.map((group) => (
-                  <SelectItem key={group.category} value={group.category}>
-                    {group.category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCustomCategory ? (
+              <div className="flex gap-2">
+                <Select value={selectedCategory} onValueChange={(val) => {
+                  if (val === "__custom__") {
+                    setIsCustomCategory(true);
+                    setSelectedCategory("");
+                    setCustomCategory("");
+                  } else {
+                    setSelectedCategory(val);
+                  }
+                }}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Pilih kategori sistem" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JENIS_PEKERJAAN_GROUPS.map((group) => (
+                      <SelectItem key={group.category} value={group.category}>
+                        {group.category}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__custom__" className="text-primary font-medium">
+                      + Input Manual
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ketik kategori sistem..."
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="flex-1"
+                  disabled
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setIsCustomCategory(false);
+                    setCustomCategory("");
+                    setSelectedCategory("");
+                  }}
+                  title="Kembali ke pilihan"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Jenis Pekerjaan */}
           <div className="grid gap-2">
             <Label>Jenis Pekerjaan</Label>
-            <Select
-              value={jenisSelect}
-              onValueChange={(val) => {
-                setJenisSelect(val);
-                addJenis(val);
-              }}
-              disabled={!selectedCategory}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={selectedCategory ? "Pilih pekerjaan" : "Pilih kategori dulu"} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {filteredJobs.map((j) => (
-                  <SelectItem key={j} value={j}>{j}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCustomCategory ? (
+              <Select
+                value={jenisSelect}
+                onValueChange={(val) => {
+                  setJenisSelect(val);
+                  addJenis(val);
+                }}
+                disabled={!selectedCategory}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={selectedCategory ? "Pilih pekerjaan" : "Pilih kategori dulu"} />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {filteredJobs.filter(j => j !== "Others").map((j) => (
+                    <SelectItem key={j} value={j}>{j}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : null}
+            {/* Input manual jenis pekerjaan */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ketik jenis pekerjaan manual..."
+                value={jenisManualInput}
+                onChange={(e) => setJenisManualInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (jenisManualInput.trim()) {
+                      addJenis(jenisManualInput.trim());
+                      setJenisManualInput("");
+                    }
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (jenisManualInput.trim()) {
+                    addJenis(jenisManualInput.trim());
+                    setJenisManualInput("");
+                  }
+                }}
+                disabled={!jenisManualInput.trim()}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
             {jenisList.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {jenisList.map((j) => (
