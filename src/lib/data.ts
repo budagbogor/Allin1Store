@@ -494,6 +494,38 @@ export function getTopModelKendaraan(entries: SalesEntry[], limit = 10) {
     .map(([name, value]) => ({ name, value }));
 }
 
+export function getTopModelKendaraanPerPekerjaan(
+  entries: SalesEntry[],
+  pekerjaanList: string[],
+  limitModels = Number.POSITIVE_INFINITY
+): Record<string, { totalUnit: number; models: { name: string; value: number }[] }> {
+  const modelMapByPekerjaan: Record<string, Record<string, number>> = {};
+  const unitCountByPekerjaan: Record<string, number> = {};
+
+  entries.forEach((e) => {
+    const model = e.modelKendaraan.trim();
+    if (!model) return;
+
+    const jenisSet = new Set(splitJenisPekerjaan(e.jenisPekerjaan));
+    jenisSet.forEach((jenis) => {
+      if (!modelMapByPekerjaan[jenis]) modelMapByPekerjaan[jenis] = {};
+      modelMapByPekerjaan[jenis][model] = (modelMapByPekerjaan[jenis][model] || 0) + 1;
+      unitCountByPekerjaan[jenis] = (unitCountByPekerjaan[jenis] || 0) + 1;
+    });
+  });
+
+  const result: Record<string, { totalUnit: number; models: { name: string; value: number }[] }> = {};
+  pekerjaanList.forEach((pekerjaan) => {
+    const models = Object.entries(modelMapByPekerjaan[pekerjaan] || {})
+      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+      .slice(0, limitModels)
+      .map(([name, value]) => ({ name, value }));
+    result[pekerjaan] = { totalUnit: unitCountByPekerjaan[pekerjaan] || 0, models };
+  });
+
+  return result;
+}
+
 export async function downloadDataExcel(params: { entries: SalesEntry[]; monthlyReports?: MonthlyReport[] }) {
   const XLSX = await import("xlsx");
   const entriesRows = params.entries.map((e) => ({

@@ -13,6 +13,7 @@ import {
   getMonthlySales,
   getTopPekerjaan,
   getTopModelKendaraan,
+  getTopModelKendaraanPerPekerjaan,
   TARGET_TAHUNAN,
   BULAN,
   deleteEntry,
@@ -123,6 +124,10 @@ export default function Dashboard() {
   const monthlySales = getMonthlySales(allEntries);
   const topPekerjaan = getTopPekerjaan(filteredEntries);
   const topModel = getTopModelKendaraan(filteredEntries, 10);
+  const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
+    filteredEntries,
+    topPekerjaan.map((t) => t.name)
+  );
   const unitCount = filteredEntries.length;
 
   // Hitung persentase terhadap total sales toko
@@ -409,6 +414,10 @@ export default function Dashboard() {
                         {topPekerjaan.map((item, i) => {
                           const maxVal = topPekerjaan[0]?.value || 1;
                           const pct = (item.value / maxVal) * 100;
+                          const stats = topModelPerPekerjaan[item.name];
+                          const topModelsText = (stats?.models || [])
+                            .map((m) => `${m.name} (${m.value})`)
+                            .join(", ");
                           return (
                             <div key={item.name}>
                               <div className="flex justify-between text-sm mb-1">
@@ -424,6 +433,22 @@ export default function Dashboard() {
                                   }}
                                 />
                               </div>
+                              {stats?.totalUnit ? (
+                                <div className="flex items-center justify-between gap-2 mt-1">
+                                  <p
+                                    className="text-[11px] text-muted-foreground min-w-0 flex-1 whitespace-normal break-words leading-snug"
+                                    style={{
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 3,
+                                      WebkitBoxOrient: "vertical",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    {topModelsText ? `Kendaraan: ${topModelsText}` : "Kendaraan: -"}
+                                  </p>
+                                  <span className="text-[10px] text-muted-foreground shrink-0">{stats.totalUnit} unit</span>
+                                </div>
+                              ) : null}
                             </div>
                           );
                         })}
