@@ -284,9 +284,8 @@ export default function AnalisaPage() {
                           <YAxis
                             dataKey="name"
                             type="category"
-                            width={160}
+                            width={350}
                             tick={{ fontSize: 11 }}
-                            tickFormatter={(v) => v.length > 20 ? v.slice(0, 20) + "…" : v}
                           />
                           <Tooltip
                             formatter={(val: number) => [`${formatMenit(val)}`, "Avg Leadtime"]}
@@ -329,9 +328,8 @@ export default function AnalisaPage() {
                           <YAxis
                             dataKey="name"
                             type="category"
-                            width={160}
+                            width={300}
                             tick={{ fontSize: 11 }}
-                            tickFormatter={(v) => v.length > 20 ? v.slice(0, 20) + "…" : v}
                           />
                           <Tooltip formatter={(val: number) => [`${val}x digunakan`, "Frekuensi"]} />
                           <Bar dataKey="value" radius={[0, 4, 4, 0]}>
