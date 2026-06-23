@@ -32,6 +32,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const [model, setModel] = useState("");
   const [modelManual, setModelManual] = useState("");
   const [isCustomModel, setIsCustomModel] = useState(false);
+  const [tahun, setTahun] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [customCategory, setCustomCategory] = useState("");
   const [isCustomCategory, setIsCustomCategory] = useState(false);
@@ -79,6 +80,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
         setModelManual(editData.modelKendaraan);
         setIsCustomModel(true);
       }
+      setTahun(editData.tahunKendaraan || "");
       setJenisList(editData.jenisPekerjaan.split(" | ").map((s) => s.trim()));
       setSales(new Intl.NumberFormat("id-ID").format(editData.jumlahSales));
       setSelectedCategory("");
@@ -102,6 +104,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       setModel("");
       setModelManual("");
       setIsCustomModel(false);
+      setTahun("");
       setSelectedCategory("");
       setCustomCategory("");
       setIsCustomCategory(false);
@@ -164,6 +167,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
         tanggal: format(date, "yyyy-MM-dd"),
         merekKendaraan: finalMerek,
         modelKendaraan: finalModel,
+        tahunKendaraan: tahun.trim(),
         jenisPekerjaan: jenisList.join(" | "),
         jumlahSales: amount,
         leadtimeJam: isNaN(jamVal) ? 0 : jamVal,
@@ -356,6 +360,17 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
                 )}
               </div>
             )}
+          </div>
+
+          {/* Tahun Kendaraan */}
+          <div className="grid gap-2">
+            <Label>Tahun Kendaraan <span className="text-muted-foreground text-xs font-normal">(opsional)</span></Label>
+            <Input
+              type="number"
+              placeholder="contoh: 2018"
+              value={tahun}
+              onChange={(e) => setTahun(e.target.value)}
+            />
           </div>
 
           {/* Kategori Sistem */}

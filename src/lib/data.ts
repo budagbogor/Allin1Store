@@ -221,6 +221,7 @@ export interface SalesEntry {
   tanggal: string;
   merekKendaraan: string;
   modelKendaraan: string;
+  tahunKendaraan?: string;
   jenisPekerjaan: string;
   jumlahSales: number;
   leadtimeJam?: number;
@@ -271,6 +272,7 @@ export async function getEntries(): Promise<SalesEntry[]> {
     tanggal: r.tanggal,
     merekKendaraan: r.merek_kendaraan,
     modelKendaraan: r.model_kendaraan,
+    tahunKendaraan: r.tahun_kendaraan || "",
     jenisPekerjaan: r.jenis_pekerjaan,
     jumlahSales: Number(r.jumlah_sales),
     leadtimeJam: r.leadtime_jam ?? 0,
@@ -287,6 +289,7 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
       tanggal: entry.tanggal,
       merek_kendaraan: entry.merekKendaraan,
       model_kendaraan: entry.modelKendaraan,
+      tahun_kendaraan: entry.tahunKendaraan || null,
       jenis_pekerjaan: entry.jenisPekerjaan,
       jumlah_sales: entry.jumlahSales,
       leadtime_jam: entry.leadtimeJam ?? 0,
@@ -302,6 +305,7 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
     tanggal: data.tanggal,
     merekKendaraan: data.merek_kendaraan,
     modelKendaraan: data.model_kendaraan,
+    tahunKendaraan: data.tahun_kendaraan || "",
     jenisPekerjaan: data.jenis_pekerjaan,
     jumlahSales: Number(data.jumlah_sales),
     leadtimeJam: data.leadtime_jam ?? 0,
@@ -318,6 +322,7 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
       tanggal: entry.tanggal,
       merek_kendaraan: entry.merekKendaraan,
       model_kendaraan: entry.modelKendaraan,
+      tahun_kendaraan: entry.tahunKendaraan || null,
       jenis_pekerjaan: entry.jenisPekerjaan,
       jumlah_sales: entry.jumlahSales,
       leadtime_jam: entry.leadtimeJam ?? 0,
@@ -334,6 +339,7 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
     tanggal: data.tanggal,
     merekKendaraan: data.merek_kendaraan,
     modelKendaraan: data.model_kendaraan,
+    tahunKendaraan: data.tahun_kendaraan || "",
     jenisPekerjaan: data.jenis_pekerjaan,
     jumlahSales: Number(data.jumlah_sales),
     leadtimeJam: data.leadtime_jam ?? 0,
@@ -532,19 +538,20 @@ export async function downloadDataExcel(params: { entries: SalesEntry[]; monthly
     Tanggal: e.tanggal,
     Merek: e.merekKendaraan,
     Model: e.modelKendaraan,
+    Tahun: e.tahunKendaraan || "-",
     "Jenis Pekerjaan": splitJenisPekerjaan(e.jenisPekerjaan).join(", "),
     "Sales (IDR)": e.jumlahSales,
   }));
 
   const wb = XLSX.utils.book_new();
   const entriesWs = XLSX.utils.json_to_sheet(entriesRows, {
-    header: ["Tanggal", "Merek", "Model", "Jenis Pekerjaan", "Sales (IDR)"],
+    header: ["Tanggal", "Merek", "Model", "Tahun", "Jenis Pekerjaan", "Sales (IDR)"],
   });
-  entriesWs["!cols"] = [{ wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 40 }, { wch: 16 }];
+  entriesWs["!cols"] = [{ wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 40 }, { wch: 16 }];
   if (entriesRows.length > 0) {
-    entriesWs["!autofilter"] = { ref: `A1:E${entriesRows.length + 1}` };
+    entriesWs["!autofilter"] = { ref: `A1:F${entriesRows.length + 1}` };
     for (let r = 2; r <= entriesRows.length + 1; r++) {
-      const cellAddr = `E${r}`;
+      const cellAddr = `F${r}`;
       const cell = entriesWs[cellAddr];
       if (cell) cell.z = '"Rp" #,##0';
     }
