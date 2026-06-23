@@ -616,12 +616,13 @@ export function getLeadtimeByPekerjaan(entries: SalesEntry[]) {
   entries.forEach((e) => {
     const totalMenit = toTotalMenit(e.leadtimeJam ?? 0, e.leadtimeMenit ?? 0);
     if (totalMenit === 0) return;
-    const jenisList = splitJenisPekerjaan(e.jenisPekerjaan);
-    jenisList.forEach((j) => {
-      if (!map[j]) map[j] = { total: 0, count: 0 };
-      map[j].total += totalMenit;
-      map[j].count += 1;
-    });
+    
+    // Gabungkan semua pekerjaan menjadi satu string dengan koma (Opsi 1)
+    const joinedJenis = splitJenisPekerjaan(e.jenisPekerjaan).join(", ");
+    
+    if (!map[joinedJenis]) map[joinedJenis] = { total: 0, count: 0 };
+    map[joinedJenis].total += totalMenit;
+    map[joinedJenis].count += 1;
   });
   return Object.entries(map)
     .map(([name, { total, count }]) => ({ name, avgMenit: Math.round(total / count), count }))
