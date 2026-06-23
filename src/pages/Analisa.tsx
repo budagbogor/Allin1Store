@@ -269,14 +269,14 @@ export default function AnalisaPage() {
                 </CardHeader>
                 <CardContent>
                   {leadtimeByPekerjaan.length === 0 ? (
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[500px] flex items-center justify-center">
                       <p className="text-muted-foreground text-sm text-center">
                         Belum ada data leadtime.<br />
                         <span className="text-xs">Isi field leadtime saat input pekerjaan.</span>
                       </p>
                     </div>
                   ) : (
-                    <div className="h-[300px]">
+                    <div className="h-[500px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={leadtimeByPekerjaan} layout="vertical" margin={{ left: 8, right: 32 }}>
                           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -313,14 +313,14 @@ export default function AnalisaPage() {
                 </CardHeader>
                 <CardContent>
                   {topTools.length === 0 ? (
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[500px] flex items-center justify-center">
                       <p className="text-muted-foreground text-sm text-center">
                         Belum ada data special tools.<br />
                         <span className="text-xs">Isi field special tools saat input pekerjaan.</span>
                       </p>
                     </div>
                   ) : (
-                    <div className="h-[300px]">
+                    <div className="h-[500px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={topTools} layout="vertical" margin={{ left: 8, right: 32 }}>
                           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
