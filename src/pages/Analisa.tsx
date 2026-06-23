@@ -361,9 +361,9 @@ export default function AnalisaPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Jenis Pekerjaan</TableHead>
-                          <TableHead className="text-center">Jumlah Data</TableHead>
-                          <TableHead className="text-center">Avg Leadtime</TableHead>
+                          <TableHead className="w-[45%] min-w-[250px]">Jenis Pekerjaan</TableHead>
+                          <TableHead className="text-center whitespace-nowrap">Jumlah Data</TableHead>
+                          <TableHead className="text-center whitespace-nowrap">Avg Leadtime</TableHead>
                           <TableHead className="w-full">Proporsi</TableHead>
                         </TableRow>
                       </TableHeader>
