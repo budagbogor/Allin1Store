@@ -90,6 +90,8 @@ export default function Dashboard() {
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -111,11 +113,21 @@ export default function Dashboard() {
     fetchEntries();
   }, [fetchEntries]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth]);
+
   const filteredEntries = allEntries.filter((e) => {
     if (selectedMonth === "all") return true;
     const date = new Date(e.tanggal);
     return date.getMonth() === parseInt(selectedMonth);
   });
+
+  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+  const paginatedEntries = filteredEntries.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalSales = filteredEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
   const totalSalesAllTime = allEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
@@ -567,7 +579,7 @@ export default function Dashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredEntries.slice(0, 20).map((e) => (
+                      {paginatedEntries.map((e) => (
                         <TableRow key={e.id}>
                           <TableCell className="whitespace-nowrap">{e.tanggal}</TableCell>
                           <TableCell>{e.merekKendaraan}</TableCell>
@@ -599,6 +611,45 @@ export default function Dashboard() {
                       ))}
                     </TableBody>
                   </Table>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Tampil per halaman:</span>
+                      <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[80px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="20">20</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Prev
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Halaman {currentPage} dari {totalPages || 1}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
