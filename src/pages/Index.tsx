@@ -11,6 +11,7 @@ import {
   getEntries,
   formatIDR,
   getMonthlySales,
+  getMonthlyEntries,
   getTopPekerjaan,
   getTopModelKendaraan,
   getTopModelKendaraanPerPekerjaan,
@@ -134,6 +135,7 @@ export default function Dashboard() {
   const progressPct = Math.min((totalSalesAllTime / TARGET_TAHUNAN) * 100, 100);
   const sisaTarget = Math.max(TARGET_TAHUNAN - totalSalesAllTime, 0);
   const monthlySales = getMonthlySales(allEntries);
+  const monthlyEntries = getMonthlyEntries(allEntries);
   const topPekerjaan = getTopPekerjaan(filteredEntries, 10);
   const topModel = getTopModelKendaraan(filteredEntries, 20);
   const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
@@ -154,6 +156,7 @@ export default function Dashboard() {
   const salesPercentage = currentTotalSalesToko > 0 ? (totalSales / currentTotalSalesToko) * 100 : 0;
 
   const chartData = BULAN.map((name, i) => ({ name, sales: monthlySales[i] }));
+  const chartDataEntries = BULAN.map((name, i) => ({ name, entries: monthlyEntries[i] }));
 
   const handleDelete = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
@@ -390,28 +393,53 @@ export default function Dashboard() {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="glass-card lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">Akumulasi Sales Per Bulan</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 sm:h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                        <YAxis tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(0)}jt`} tick={{ fontSize: 12 }} />
-                        <Tooltip formatter={(v: number) => formatIDR(v)} />
-                        <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
-                          {chartData.map((_, i) => (
-                            <Cell key={i} fill={`hsl(var(--chart-${(i % 5) + 1}))`} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="lg:col-span-2 space-y-4">
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Akumulasi Sales Per Bulan</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 sm:h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                          <YAxis tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(0)}jt`} tick={{ fontSize: 12 }} />
+                          <Tooltip formatter={(v: number) => formatIDR(v)} />
+                          <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
+                            {chartData.map((_, i) => (
+                              <Cell key={i} fill={`hsl(var(--chart-${(i % 5) + 1}))`} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Unit Entry New Job Varian</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 sm:h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartDataEntries}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                          <YAxis tick={{ fontSize: 12 }} />
+                          <Tooltip formatter={(v: number) => `${v} Unit`} />
+                          <Bar dataKey="entries" radius={[4, 4, 0, 0]}>
+                            {chartDataEntries.map((_, i) => (
+                              <Cell key={i} fill={`hsl(var(--chart-${((i + 2) % 5) + 1}))`} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
               <div className="space-y-4">
                 <Card className="glass-card">

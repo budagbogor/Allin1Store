@@ -464,6 +464,17 @@ export function getMonthlySales(entries: SalesEntry[]): number[] {
   return monthly;
 }
 
+export function getMonthlyEntries(entries: SalesEntry[]): number[] {
+  const monthly = new Array(12).fill(0);
+  entries.forEach((e) => {
+    const date = new Date(e.tanggal);
+    if (date.getFullYear() === 2026) {
+      monthly[date.getMonth()] += 1;
+    }
+  });
+  return monthly;
+}
+
 export function splitJenisPekerjaan(jenisPekerjaan: string): string[] {
   return jenisPekerjaan
     .split("|")
