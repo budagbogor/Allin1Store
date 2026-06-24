@@ -122,7 +122,7 @@ export default function Dashboard() {
   const progressPct = Math.min((totalSalesAllTime / TARGET_TAHUNAN) * 100, 100);
   const sisaTarget = Math.max(TARGET_TAHUNAN - totalSalesAllTime, 0);
   const monthlySales = getMonthlySales(allEntries);
-  const topPekerjaan = getTopPekerjaan(filteredEntries);
+  const topPekerjaan = getTopPekerjaan(filteredEntries, 10);
   const topModel = getTopModelKendaraan(filteredEntries, 10);
   const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
     filteredEntries,
@@ -404,7 +404,7 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Top 5 Jenis Pekerjaan</CardTitle>
+                    <CardTitle className="text-lg">Top 10 Jenis Pekerjaan</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {topPekerjaan.length === 0 ? (
