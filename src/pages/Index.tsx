@@ -135,7 +135,7 @@ export default function Dashboard() {
   const sisaTarget = Math.max(TARGET_TAHUNAN - totalSalesAllTime, 0);
   const monthlySales = getMonthlySales(allEntries);
   const topPekerjaan = getTopPekerjaan(filteredEntries, 10);
-  const topModel = getTopModelKendaraan(filteredEntries, 10);
+  const topModel = getTopModelKendaraan(filteredEntries, 20);
   const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
     filteredEntries,
     topPekerjaan.map((t) => t.name)
@@ -471,7 +471,7 @@ export default function Dashboard() {
 
                 <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Top 10 Model Kendaraan</CardTitle>
+                    <CardTitle className="text-lg">Top 20 Model Kendaraan</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {topModel.length === 0 ? (
