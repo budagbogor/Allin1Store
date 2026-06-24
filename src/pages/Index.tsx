@@ -567,7 +567,8 @@ export default function Dashboard() {
                 {allEntries.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">Belum ada data. Klik "Input Data Baru" untuk mulai.</p>
                 ) : (
-                  <Table className="min-w-[720px]">
+                  <>
+                    <Table className="min-w-[720px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Tanggal</TableHead>
@@ -650,6 +651,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   </div>
+                  </>
                 )}
               </CardContent>
             </Card>
