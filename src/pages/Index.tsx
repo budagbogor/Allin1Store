@@ -7,6 +7,7 @@ import { InputForm } from "@/components/InputForm";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { MonthlyReportDialog } from "@/components/MonthlyReportDialog";
 import { StoreSalesDialog } from "@/components/StoreSalesDialog";
+import { TargetDialog } from "@/components/TargetDialog";
 import {
   getEntries,
   formatIDR,
@@ -15,7 +16,7 @@ import {
   getTopPekerjaan,
   getTopModelKendaraan,
   getTopModelKendaraanPerPekerjaan,
-  TARGET_TAHUNAN,
+  getStoreTarget,
   BULAN,
   deleteEntry,
   getMonthlyReports,
@@ -94,17 +95,20 @@ export default function Dashboard() {
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [targetTahunan, setTargetTahunan] = useState(650_000_000);
   const { selectedStore } = useStoreContext();
 
   const fetchEntries = useCallback(async () => {
     if (!selectedStore) return;
     try {
-      const [entriesData, reportsData] = await Promise.all([
+      const [entriesData, reportsData, targetData] = await Promise.all([
         getEntries(selectedStore),
         getMonthlyReports(selectedStore),
+        getStoreTarget(selectedStore, 2026),
       ]);
       setAllEntries(entriesData);
       setMonthlyReports(reportsData);
+      setTargetTahunan(targetData);
     } catch (err) {
       console.error(err);
       toast.error("Gagal memuat data dari database.");
@@ -135,8 +139,8 @@ export default function Dashboard() {
 
   const totalSales = filteredEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
   const totalSalesAllTime = allEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
-  const progressPct = Math.min((totalSalesAllTime / TARGET_TAHUNAN) * 100, 100);
-  const sisaTarget = Math.max(TARGET_TAHUNAN - totalSalesAllTime, 0);
+  const progressPct = Math.min((totalSalesAllTime / targetTahunan) * 100, 100);
+  const sisaTarget = Math.max(targetTahunan - totalSalesAllTime, 0);
   const monthlySales = getMonthlySales(allEntries);
   const monthlyEntries = getMonthlyEntries(allEntries);
   const topPekerjaan = getTopPekerjaan(filteredEntries, 10);
@@ -257,6 +261,7 @@ export default function Dashboard() {
                   <DropdownMenuSeparator className="my-1" />
                   
                   <div className="space-y-1">
+                    <TargetDialog onSuccess={fetchEntries} />
                     <StoreSalesDialog onSuccess={fetchEntries} />
                     <MonthlyReportDialog onSuccess={fetchEntries} />
                   </div>
@@ -358,7 +363,7 @@ export default function Dashboard() {
                   <Target className="h-5 w-5 text-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-heading font-bold">{formatIDR(TARGET_TAHUNAN)}</div>
+                  <div className="text-2xl font-heading font-bold">{formatIDR(targetTahunan)}</div>
                 </CardContent>
               </Card>
 

@@ -209,7 +209,7 @@ export const MODEL_BY_MEREK: Record<(typeof MEREK_KENDARAAN)[number], readonly s
   Others: ["Others"],
 };
 
-export const TARGET_TAHUNAN = 650_000_000;
+// Target tahunan is now fetched dynamically from store_targets table
 
 export const BULAN = [
   "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
@@ -385,6 +385,37 @@ export async function saveMonthlyReport(report: MonthlyReport, storeName: string
         store_name: storeName,
       },
       { onConflict: "bulan,tahun,store_name" } // IMPORTANT: DB unique constraint needs to include store_name now
+    );
+  if (error) throw error;
+}
+
+// --- Store Targets CRUD ---
+
+export async function getStoreTarget(storeName: string, tahun: number = 2026): Promise<number> {
+  const { data, error } = await supabase
+    .from("store_targets")
+    .select("target_amount")
+    .eq("store_name", storeName)
+    .eq("tahun", tahun)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching store target:", error);
+    return 650_000_000; // default fallback
+  }
+  return data?.target_amount ? Number(data.target_amount) : 650_000_000;
+}
+
+export async function saveStoreTarget(storeName: string, tahun: number, amount: number) {
+  const { error } = await supabase
+    .from("store_targets")
+    .upsert(
+      {
+        store_name: storeName,
+        tahun: tahun,
+        target_amount: amount,
+      },
+      { onConflict: "store_name,tahun" }
     );
   if (error) throw error;
 }
