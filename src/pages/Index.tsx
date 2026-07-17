@@ -196,7 +196,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const monthlyReports = await getMonthlyReports();
+      const monthlyReports = await getMonthlyReports(selectedStore);
       await downloadDataExcel({ entries: allEntries, monthlyReports });
     } catch (err) {
       console.error(err);
