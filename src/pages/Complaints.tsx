@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { getComplaints, deleteComplaint, getComplaintStats, type ComplaintEntry } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 import logoMobeng from "@/assets/logomobeng.jpg";
 
 const COLORS = ["#ef4444", "#f97316", "#eab308", "#8b5cf6", "#3b82f6", "#10b981", "#64748b"];
@@ -15,10 +16,12 @@ const COLORS = ["#ef4444", "#f97316", "#eab308", "#8b5cf6", "#3b82f6", "#10b981"
 export default function ComplaintsPage() {
   const [complaints, setComplaints] = useState<ComplaintEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedStore } = useStoreContext();
 
   const fetchComplaints = useCallback(async () => {
+    if (!selectedStore) return;
     try {
-      const data = await getComplaints();
+      const data = await getComplaints(selectedStore);
       setComplaints(data);
     } catch (err) {
       console.error(err);
@@ -26,7 +29,7 @@ export default function ComplaintsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedStore]);
 
   useEffect(() => {
     fetchComplaints();
@@ -54,17 +57,17 @@ export default function ComplaintsPage() {
       <header className="bg-slate-900 px-4 sm:px-6 py-4 shadow-lg border-b border-accent/20">
         <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/">
+            <Link to="/dashboard">
               <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/" className="transition-transform hover:scale-105 active:scale-95">
+            <Link to="/dashboard" className="transition-transform hover:scale-105 active:scale-95">
               <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
             </Link>
             <div>
               <h1 className="text-xl text-white font-heading">Complaint Monitoring</h1>
-              <p className="text-slate-400 text-xs font-body">Paska Instalasi & Service</p>
+              <p className="text-slate-400 text-xs font-body">{selectedStore}</p>
             </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -256,7 +259,7 @@ export default function ComplaintsPage() {
       </main>
       
       <footer className="bg-slate-900 py-4 text-center border-t border-slate-800">
-        <p className="text-xs text-slate-500">© 2026 Quality Assurance Department — Mobeng</p>
+        <p className="text-xs text-slate-500">© 2026 Quality Assurance Department — {selectedStore}</p>
       </footer>
     </div>
   );

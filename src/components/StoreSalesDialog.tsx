@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator } from "lucide-react";
 import { BULAN, getMonthlyReports, saveMonthlyReport, type MonthlyReport, formatIDR } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 import { toast } from "sonner";
 
 export function StoreSalesDialog({ onSuccess }: { onSuccess?: () => void }) {
@@ -14,15 +15,17 @@ export function StoreSalesDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [sales, setSales] = useState("");
   const [saving, setSaving] = useState(false);
   const [reports, setReports] = useState<MonthlyReport[]>([]);
+  const { selectedStore } = useStoreContext();
 
   const fetchReports = useCallback(async () => {
+    if (!selectedStore) return;
     try {
-      const data = await getMonthlyReports();
+      const data = await getMonthlyReports(selectedStore);
       setReports(data.filter(r => r.tahun === 2026));
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [selectedStore]);
 
   useEffect(() => {
     if (open) {
@@ -55,7 +58,7 @@ export function StoreSalesDialog({ onSuccess }: { onSuccess?: () => void }) {
         penjelasanPerforma: reports.find(r => r.bulan === parseInt(bulan))?.penjelasanPerforma || "",
         kendala: reports.find(r => r.bulan === parseInt(bulan))?.kendala || "",
         actionPlan: reports.find(r => r.bulan === parseInt(bulan))?.actionPlan || "",
-      });
+      }, selectedStore);
       toast.success("Data sales toko berhasil disimpan!");
       setOpen(false);
       if (onSuccess) onSuccess();

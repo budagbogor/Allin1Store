@@ -22,6 +22,7 @@ import {
   splitJenisPekerjaan,
   type SalesEntry,
 } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 
 const CHART_COLORS = [
   "#6366f1", "#8b5cf6", "#a78bfa", "#7c3aed", "#4f46e5",
@@ -103,10 +104,12 @@ export default function AnalisaPage() {
   const [allEntries, setAllEntries] = useState<SalesEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { selectedStore } = useStoreContext();
 
   const fetchEntries = useCallback(async () => {
+    if (!selectedStore) return;
     try {
-      const data = await getEntries();
+      const data = await getEntries(selectedStore);
       setAllEntries(data);
     } catch (err) {
       console.error(err);
@@ -114,7 +117,7 @@ export default function AnalisaPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedStore]);
 
   useEffect(() => {
     fetchEntries();
@@ -157,17 +160,17 @@ export default function AnalisaPage() {
       >
         <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/">
+            <Link to="/dashboard">
               <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/" className="transition-transform hover:scale-105 active:scale-95">
+            <Link to="/dashboard" className="transition-transform hover:scale-105 active:scale-95">
               <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover" />
             </Link>
             <div>
               <h1 className="text-xl text-white font-heading">Dashboard Analisa Teknis</h1>
-              <p className="text-indigo-300 text-xs font-body">Leadtime · Special Tools · Langkah Pengerjaan</p>
+              <p className="text-indigo-300 text-xs font-body">{selectedStore}</p>
             </div>
           </div>
           <div className="text-right hidden sm:block">
@@ -461,7 +464,7 @@ export default function AnalisaPage() {
         className="py-4 text-center border-t"
         style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)" }}
       >
-        <p className="text-xs text-indigo-400">© 2026 Technical Analysis — Mobeng Harapan Indah</p>
+        <p className="text-xs text-indigo-400">© 2026 Technical Analysis — {selectedStore}</p>
       </footer>
     </div>
   );

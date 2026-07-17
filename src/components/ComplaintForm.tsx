@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MEREK_KENDARAAN, MODEL_BY_MEREK, COMPLAINT_TYPES, saveComplaint, type ComplaintEntry } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 import { toast } from "sonner";
 
 interface PrefillData {
@@ -33,6 +34,7 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
     if (!isControlled) setOpenInternal(val);
     onOpenChange?.(val);
   };
+  const { selectedStore } = useStoreContext();
 
   const [date, setDate] = useState<Date>(new Date());
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
@@ -72,7 +74,7 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
         jenisComplain: jenisComplain,
         keterangan: keterangan,
         status: "Open",
-      });
+      }, selectedStore);
       toast.success("Complaint berhasil disimpan!");
       setOpen(false);
       onSuccess();

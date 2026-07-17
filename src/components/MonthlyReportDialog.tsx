@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, CheckCircle2 } from "lucide-react";
 import { BULAN, getMonthlyReports, saveMonthlyReport, type MonthlyReport } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 import { toast } from "sonner";
 
 export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
@@ -16,15 +17,17 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [actionPlan, setActionPlan] = useState("");
   const [saving, setSaving] = useState(false);
   const [reports, setReports] = useState<MonthlyReport[]>([]);
+  const { selectedStore } = useStoreContext();
 
   const fetchReports = useCallback(async () => {
+    if (!selectedStore) return;
     try {
-      const data = await getMonthlyReports();
+      const data = await getMonthlyReports(selectedStore);
       setReports(data.filter(r => r.tahun === 2026));
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [selectedStore]);
 
   useEffect(() => {
     if (open) {
@@ -62,7 +65,7 @@ export function MonthlyReportDialog({ onSuccess }: { onSuccess?: () => void }) {
         kendala,
         actionPlan,
         totalSalesToko: existing?.totalSalesToko || 0,
-      });
+      }, selectedStore);
       toast.success("Laporan bulanan berhasil disimpan!");
       setOpen(false);
       if (onSuccess) onSuccess();

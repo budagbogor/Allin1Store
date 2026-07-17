@@ -261,10 +261,11 @@ export const COMPLAINT_TYPES = [
 
 // --- Supabase CRUD ---
 
-export async function getEntries(): Promise<SalesEntry[]> {
+export async function getEntries(storeName: string): Promise<SalesEntry[]> {
   const { data, error } = await supabase
     .from("sales_entries")
     .select("*")
+    .eq("store_name", storeName)
     .order("tanggal", { ascending: false });
   if (error) throw error;
   return (data || []).map((r) => ({
@@ -282,7 +283,7 @@ export async function getEntries(): Promise<SalesEntry[]> {
   }));
 }
 
-export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEntry> {
+export async function saveEntry(entry: Omit<SalesEntry, "id">, storeName: string): Promise<SalesEntry> {
   const { data, error } = await supabase
     .from("sales_entries")
     .insert({
@@ -296,6 +297,7 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">): Promise<SalesEnt
       leadtime_menit: entry.leadtimeMenit ?? 0,
       special_tools: entry.specialTools ?? "",
       langkah_pengerjaan: entry.langkahPengerjaan ?? "",
+      store_name: storeName,
     })
     .select()
     .single();
@@ -329,6 +331,8 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
       leadtime_menit: entry.leadtimeMenit ?? 0,
       special_tools: entry.specialTools ?? "",
       langkah_pengerjaan: entry.langkahPengerjaan ?? "",
+      // No need to update store_name on edit, assuming it stays in the same store.
+
     })
     .eq("id", id)
     .select()
@@ -354,8 +358,8 @@ export async function deleteEntry(id: string) {
   if (error) throw error;
 }
 
-export async function getMonthlyReports(): Promise<MonthlyReport[]> {
-  const { data, error } = await supabase.from("monthly_reports").select("*");
+export async function getMonthlyReports(storeName: string): Promise<MonthlyReport[]> {
+  const { data, error } = await supabase.from("monthly_reports").select("*").eq("store_name", storeName);
   if (error) throw error;
   return (data || []).map((r) => ({
     bulan: r.bulan,
@@ -367,7 +371,7 @@ export async function getMonthlyReports(): Promise<MonthlyReport[]> {
   }));
 }
 
-export async function saveMonthlyReport(report: MonthlyReport) {
+export async function saveMonthlyReport(report: MonthlyReport, storeName: string) {
   const { error } = await supabase
     .from("monthly_reports")
     .upsert(
@@ -378,18 +382,20 @@ export async function saveMonthlyReport(report: MonthlyReport) {
         kendala: report.kendala,
         action_plan: report.actionPlan,
         total_sales_toko: report.totalSalesToko,
+        store_name: storeName,
       },
-      { onConflict: "bulan,tahun" }
+      { onConflict: "bulan,tahun,store_name" } // IMPORTANT: DB unique constraint needs to include store_name now
     );
   if (error) throw error;
 }
 
 // --- Complaints CRUD ---
 
-export async function getComplaints(): Promise<ComplaintEntry[]> {
+export async function getComplaints(storeName: string): Promise<ComplaintEntry[]> {
   const { data, error } = await supabase
     .from("complaints")
     .select("*")
+    .eq("store_name", storeName)
     .order("tanggal", { ascending: false });
   if (error) {
     console.error("Error fetching complaints:", error);
@@ -406,7 +412,7 @@ export async function getComplaints(): Promise<ComplaintEntry[]> {
   }));
 }
 
-export async function saveComplaint(entry: Omit<ComplaintEntry, "id">): Promise<ComplaintEntry> {
+export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName: string): Promise<ComplaintEntry> {
   const { data, error } = await supabase
     .from("complaints")
     .insert({
@@ -416,6 +422,7 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">): Promise<
       jenis_complain: entry.jenisComplain,
       keterangan: entry.keterangan,
       status: entry.status,
+      store_name: storeName,
     })
     .select()
     .single();

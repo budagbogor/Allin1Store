@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { JENIS_PEKERJAAN_GROUPS, MEREK_KENDARAAN, MODEL_BY_MEREK, saveEntry, updateEntry, type SalesEntry } from "@/lib/data";
+import { useStoreContext } from "@/lib/storeContext";
 import { toast } from "sonner";
 
 interface Props {
@@ -24,6 +25,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
+  const { selectedStore } = useStoreContext();
 
   const [date, setDate] = useState<Date>();
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
@@ -180,7 +182,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
         await updateEntry(editData.id, payload);
         toast.success("Data berhasil diperbarui!");
       } else {
-        await saveEntry(payload);
+        await saveEntry(payload, selectedStore);
         toast.success("Data berhasil disimpan!");
       }
 

@@ -44,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useStoreContext } from "@/lib/storeContext";
 
 const ReportContent = ({ report, showMonth = true }: { report: MonthlyReport, showMonth?: boolean }) => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -93,12 +94,14 @@ export default function Dashboard() {
   const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { selectedStore } = useStoreContext();
 
   const fetchEntries = useCallback(async () => {
+    if (!selectedStore) return;
     try {
       const [entriesData, reportsData] = await Promise.all([
-        getEntries(),
-        getMonthlyReports(),
+        getEntries(selectedStore),
+        getMonthlyReports(selectedStore),
       ]);
       setAllEntries(entriesData);
       setMonthlyReports(reportsData);
@@ -112,7 +115,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchEntries();
-  }, [fetchEntries]);
+  }, [fetchEntries, selectedStore]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -203,12 +206,12 @@ export default function Dashboard() {
       <header className="gradient-primary px-4 sm:px-6 py-4 sm:py-5 shadow-lg">
           <div className="flex w-full items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Link to="/" className="transition-transform hover:scale-105 active:scale-95 shrink-0">
+              <Link to="/dashboard" className="transition-transform hover:scale-105 active:scale-95 shrink-0">
                 <img src={logoMobeng} alt="Mobeng Logo" className="h-10 w-10 rounded-lg object-cover ring-2 ring-primary-foreground/50" />
               </Link>
               <div className="flex flex-col justify-center">
                 <h1 className="text-base sm:text-lg font-bold text-white leading-tight">All in 1 Store</h1>
-                <p className="text-[9px] sm:text-[10px] text-primary-foreground/70 uppercase tracking-wider">Mobeng Harapan Indah</p>
+                <p className="text-[9px] sm:text-[10px] text-primary-foreground/70 uppercase tracking-wider">{selectedStore}</p>
               </div>
             </div>
 
@@ -266,6 +269,13 @@ export default function Dashboard() {
                   >
                     <Download className="h-4 w-4 text-slate-500" />
                     <span>Download Excel</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuItem asChild className="focus:bg-slate-100 cursor-pointer">
+                    <Link to="/" className="flex items-center gap-2 w-full px-2 py-1.5 text-muted-foreground">
+                      <span>Ganti Toko</span>
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
