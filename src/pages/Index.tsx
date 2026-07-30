@@ -185,6 +185,8 @@ export default function Dashboard() {
     currentTotalSalesToko = report?.totalSalesToko || 0;
   }
   const salesPercentage = currentTotalSalesToko > 0 ? (totalSales / currentTotalSalesToko) * 100 : 0;
+  const targetPeriode = selectedMonth === "all" ? targetTahunan : targetTahunan / 12;
+  const targetAchievementPercentage = targetPeriode > 0 ? (totalSales / targetPeriode) * 100 : 0;
 
   const chartData = BULAN.map((name, i) => ({ name, sales: monthlySales[i] }));
   const chartDataEntries = BULAN.map((name, i) => ({ name, entries: monthlyEntries[i] }));
@@ -401,16 +403,21 @@ export default function Dashboard() {
 
               <Card className="glass-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Target Sales 2026</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {selectedMonth === "all" ? "Target Sales 2026" : `Target Sales (${BULAN[parseInt(selectedMonth)]})`}
+                  </CardTitle>
                   <Target className="h-4 w-4 text-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold font-heading">{formatIDR(targetTahunan)}</div>
+                  <div className="text-2xl font-bold font-heading">{formatIDR(targetPeriode)}</div>
                   <div className="mt-2">
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span>Pencapaian: {((totalSales / targetTahunan) * 100).toFixed(1)}%</span>
+                      <span>Pencapaian Sales:</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {targetAchievementPercentage.toFixed(1)}%
+                      </span>
                     </div>
-                    <Progress value={Math.min(100, (totalSales / targetTahunan) * 100)} className="h-2" />
+                    <Progress value={Math.min(100, targetAchievementPercentage)} className="h-2" />
                   </div>
                 </CardContent>
               </Card>
@@ -508,6 +515,31 @@ export default function Dashboard() {
                           <span className="font-semibold text-primary">{formatIDR(item.value)}</span>
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Top 20 Model Kendaraan</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                      {topModel.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Belum ada data model kendaraan.</p>
+                      ) : (
+                        topModel.map((item, i) => (
+                          <div key={item.name} className="flex justify-between items-center text-sm hover:bg-muted/50 p-1 rounded transition-colors">
+                            <span className="truncate flex items-center gap-2">
+                              <span className="text-xs font-bold text-muted-foreground w-5 text-right">{i + 1}.</span>
+                              <span className="font-medium">{item.name}</span>
+                            </span>
+                            <Badge variant="secondary" className="font-semibold text-xs ml-2 shrink-0">
+                              {item.value} Unit
+                            </Badge>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>
