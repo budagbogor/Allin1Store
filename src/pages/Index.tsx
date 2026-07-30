@@ -285,6 +285,13 @@ export default function Dashboard() {
                       )}
                     </Link>
                   </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild className="focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
+                    <Link to="/analisa" className="flex items-center gap-2 w-full px-2 py-1.5">
+                      <BarChart3 className="h-4 w-4 text-indigo-500" />
+                      <span>Analisa Teknis</span>
+                    </Link>
+                  </DropdownMenuItem>
                   
                   <DropdownMenuSeparator className="my-1" />
                   
