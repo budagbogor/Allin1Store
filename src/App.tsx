@@ -30,6 +30,7 @@ const App = () => (
         <HashRouter>
           <Routes>
             <Route path="/" element={<StoreSelector />} />
+            <Route path="/select-store" element={<StoreSelector />} />
             <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
             <Route path="/analisa" element={<ProtectedRoute><Analisa /></ProtectedRoute>} />
