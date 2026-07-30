@@ -91,7 +91,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<SalesEntry | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string } | null>(null);
+  const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string; jenisPekerjaan?: string } | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [showComplaintsOnly, setShowComplaintsOnly] = useState(false);
@@ -209,6 +209,7 @@ export default function Dashboard() {
     setComplaintPrefill({
       merekKendaraan: entry.merekKendaraan,
       modelKendaraan: entry.modelKendaraan,
+      jenisPekerjaan: splitJenisPekerjaan(entry.jenisPekerjaan).join(", "),
     });
     setIsComplaintOpen(true);
   };

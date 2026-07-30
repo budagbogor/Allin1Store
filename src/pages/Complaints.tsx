@@ -283,6 +283,12 @@ export default function ComplaintsPage() {
                             <TableCell>
                               <div className="text-sm font-bold">{c.modelKendaraan}</div>
                               <div className="text-xs text-muted-foreground">{c.merekKendaraan}</div>
+                              {c.jenisPekerjaanSebelumnya && (
+                                <div className="text-[11px] text-accent font-medium mt-1 inline-flex items-center gap-1 bg-accent/10 px-1.5 py-0.5 rounded">
+                                  <span>Pekerjaan:</span>
+                                  <span className="font-semibold">{c.jenisPekerjaanSebelumnya}</span>
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>
                               <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">

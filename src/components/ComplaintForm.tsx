@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   MEREK_KENDARAAN,
   MODEL_BY_MEREK,
+  JENIS_PEKERJAAN,
   COMPLAINT_TYPES,
   PENYEBAB_MASALAH_OPTIONS,
   saveComplaint,
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 interface PrefillData {
   merekKendaraan: string;
   modelKendaraan: string;
+  jenisPekerjaan?: string;
 }
 
 interface Props {
@@ -57,6 +59,7 @@ export function ComplaintForm({
   const [date, setDate] = useState<Date>(new Date());
   const [merek, setMerek] = useState<(typeof MEREK_KENDARAAN)[number] | "">("");
   const [model, setModel] = useState("");
+  const [jenisPekerjaanSebelumnya, setJenisPekerjaanSebelumnya] = useState("");
   const [jenisComplain, setJenisComplain] = useState("");
   const [keterangan, setKeterangan] = useState("");
   const [status, setStatus] = useState<ComplaintStatus>("Open");
@@ -79,6 +82,7 @@ export function ComplaintForm({
         }
         setMerek(initialData.merekKendaraan as (typeof MEREK_KENDARAAN)[number] || "");
         setModel(initialData.modelKendaraan || "");
+        setJenisPekerjaanSebelumnya(initialData.jenisPekerjaanSebelumnya || "");
         setJenisComplain(initialData.jenisComplain || "");
         setKeterangan(initialData.keterangan || "");
         setStatus(initialData.status || "Open");
@@ -88,6 +92,7 @@ export function ComplaintForm({
       } else if (prefillData) {
         setMerek(prefillData.merekKendaraan as (typeof MEREK_KENDARAAN)[number] || "");
         setModel(prefillData.modelKendaraan || "");
+        setJenisPekerjaanSebelumnya(prefillData.jenisPekerjaan || "");
         setStatus("Open");
       }
     } else {
@@ -95,6 +100,7 @@ export function ComplaintForm({
       if (!initialData) {
         setMerek("");
         setModel("");
+        setJenisPekerjaanSebelumnya("");
         setJenisComplain("");
         setKeterangan("");
         setStatus("Open");
@@ -117,6 +123,7 @@ export function ComplaintForm({
         tanggal: format(date, "yyyy-MM-dd"),
         merekKendaraan: merek,
         modelKendaraan: model,
+        jenisPekerjaanSebelumnya: jenisPekerjaanSebelumnya,
         jenisComplain: jenisComplain,
         keterangan: keterangan,
         status: status,
@@ -226,6 +233,30 @@ export function ComplaintForm({
             </div>
           </div>
 
+          {/* Jenis Pekerjaan Sebelumnya */}
+          <div className="grid gap-2">
+            <Label>Jenis Pekerjaan Paska Instalasi (Sebelumnya)</Label>
+            <Select value={jenisPekerjaanSebelumnya} onValueChange={setJenisPekerjaanSebelumnya}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih jenis pekerjaan sebelumnya" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {JENIS_PEKERJAAN.map((jp) => (
+                  <SelectItem key={jp} value={jp}>{jp}</SelectItem>
+                ))}
+                {jenisPekerjaanSebelumnya && !JENIS_PEKERJAAN.includes(jenisPekerjaanSebelumnya) && (
+                  <SelectItem value={jenisPekerjaanSebelumnya}>{jenisPekerjaanSebelumnya}</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Atau tuliskan jenis pekerjaan secara manual jika tidak ada di daftar..."
+              value={jenisPekerjaanSebelumnya}
+              onChange={(e) => setJenisPekerjaanSebelumnya(e.target.value)}
+              className="text-xs mt-1"
+            />
+          </div>
+
           {/* Jenis Complain */}
           <div className="grid gap-2">
             <Label>Jenis Complain</Label>
@@ -319,4 +350,5 @@ export function ComplaintForm({
     </Dialog>
   );
 }
+
 

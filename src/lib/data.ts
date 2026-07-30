@@ -254,6 +254,7 @@ export interface ComplaintEntry {
   tanggal: string;
   merekKendaraan: string;
   modelKendaraan: string;
+  jenisPekerjaanSebelumnya?: string;
   jenisComplain: string;
   keterangan: string;
   status: ComplaintStatus;
@@ -451,6 +452,7 @@ export async function getComplaints(storeName: string): Promise<ComplaintEntry[]
     tanggal: r.tanggal,
     merekKendaraan: r.merek_kendaraan,
     modelKendaraan: r.model_kendaraan,
+    jenisPekerjaanSebelumnya: r.jenis_pekerjaan_sebelumnya || "",
     jenisComplain: r.jenis_complain,
     keterangan: r.keterangan,
     status: r.status || "Open",
@@ -467,6 +469,7 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
       tanggal: entry.tanggal,
       merek_kendaraan: entry.merekKendaraan,
       model_kendaraan: entry.modelKendaraan,
+      jenis_pekerjaan_sebelumnya: entry.jenisPekerjaanSebelumnya || "",
       jenis_complain: entry.jenisComplain,
       keterangan: entry.keterangan,
       status: entry.status,
@@ -483,6 +486,7 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
     tanggal: data.tanggal,
     merekKendaraan: data.merek_kendaraan,
     modelKendaraan: data.model_kendaraan,
+    jenisPekerjaanSebelumnya: data.jenis_pekerjaan_sebelumnya || "",
     jenisComplain: data.jenis_complain,
     keterangan: data.keterangan,
     status: data.status,
@@ -497,6 +501,7 @@ export async function updateComplaint(id: string, entry: Partial<ComplaintEntry>
   if (entry.tanggal !== undefined) payload.tanggal = entry.tanggal;
   if (entry.merekKendaraan !== undefined) payload.merek_kendaraan = entry.merekKendaraan;
   if (entry.modelKendaraan !== undefined) payload.model_kendaraan = entry.modelKendaraan;
+  if (entry.jenisPekerjaanSebelumnya !== undefined) payload.jenis_pekerjaan_sebelumnya = entry.jenisPekerjaanSebelumnya;
   if (entry.jenisComplain !== undefined) payload.jenis_complain = entry.jenisComplain;
   if (entry.keterangan !== undefined) payload.keterangan = entry.keterangan;
   if (entry.status !== undefined) payload.status = entry.status;
@@ -516,6 +521,7 @@ export async function updateComplaint(id: string, entry: Partial<ComplaintEntry>
     tanggal: data.tanggal,
     merekKendaraan: data.merek_kendaraan,
     modelKendaraan: data.model_kendaraan,
+    jenisPekerjaanSebelumnya: data.jenis_pekerjaan_sebelumnya || "",
     jenisComplain: data.jenis_complain,
     keterangan: data.keterangan,
     status: data.status,
