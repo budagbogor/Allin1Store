@@ -239,6 +239,16 @@ export interface MonthlyReport {
   totalSalesToko?: number;
 }
 
+export type ComplaintStatus = "Open" | "In Progress" | "Resolved" | "Closed";
+
+export const PENYEBAB_MASALAH_OPTIONS = [
+  "Spare Part",
+  "Pengerjaan",
+  "Faktor Lain",
+] as const;
+
+export type PenyebabMasalahType = (typeof PENYEBAB_MASALAH_OPTIONS)[number];
+
 export interface ComplaintEntry {
   id: string;
   tanggal: string;
@@ -246,7 +256,10 @@ export interface ComplaintEntry {
   modelKendaraan: string;
   jenisComplain: string;
   keterangan: string;
-  status: "Open" | "In Progress" | "Resolved";
+  status: ComplaintStatus;
+  pic?: string;
+  penyebabMasalah?: string;
+  catatanPenanganan?: string;
 }
 
 export const COMPLAINT_TYPES = [
@@ -258,6 +271,7 @@ export const COMPLAINT_TYPES = [
   "Pemasangan Tidak Rapi",
   "Lainnya",
 ];
+
 
 // --- Supabase CRUD ---
 
@@ -439,7 +453,10 @@ export async function getComplaints(storeName: string): Promise<ComplaintEntry[]
     modelKendaraan: r.model_kendaraan,
     jenisComplain: r.jenis_complain,
     keterangan: r.keterangan,
-    status: r.status,
+    status: r.status || "Open",
+    pic: r.pic || "",
+    penyebabMasalah: r.penyebab_masalah || "",
+    catatanPenanganan: r.catatan_penanganan || "",
   }));
 }
 
@@ -453,6 +470,9 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
       jenis_complain: entry.jenisComplain,
       keterangan: entry.keterangan,
       status: entry.status,
+      pic: entry.pic || "",
+      penyebab_masalah: entry.penyebabMasalah || "",
+      catatan_penanganan: entry.catatanPenanganan || "",
       store_name: storeName,
     })
     .select()
@@ -466,6 +486,42 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
     jenisComplain: data.jenis_complain,
     keterangan: data.keterangan,
     status: data.status,
+    pic: data.pic || "",
+    penyebabMasalah: data.penyebab_masalah || "",
+    catatanPenanganan: data.catatan_penanganan || "",
+  };
+}
+
+export async function updateComplaint(id: string, entry: Partial<ComplaintEntry>): Promise<ComplaintEntry> {
+  const payload: Record<string, any> = {};
+  if (entry.tanggal !== undefined) payload.tanggal = entry.tanggal;
+  if (entry.merekKendaraan !== undefined) payload.merek_kendaraan = entry.merekKendaraan;
+  if (entry.modelKendaraan !== undefined) payload.model_kendaraan = entry.modelKendaraan;
+  if (entry.jenisComplain !== undefined) payload.jenis_complain = entry.jenisComplain;
+  if (entry.keterangan !== undefined) payload.keterangan = entry.keterangan;
+  if (entry.status !== undefined) payload.status = entry.status;
+  if (entry.pic !== undefined) payload.pic = entry.pic;
+  if (entry.penyebabMasalah !== undefined) payload.penyebab_masalah = entry.penyebabMasalah;
+  if (entry.catatanPenanganan !== undefined) payload.catatan_penanganan = entry.catatanPenanganan;
+
+  const { data, error } = await supabase
+    .from("complaints")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    tanggal: data.tanggal,
+    merekKendaraan: data.merek_kendaraan,
+    modelKendaraan: data.model_kendaraan,
+    jenisComplain: data.jenis_complain,
+    keterangan: data.keterangan,
+    status: data.status,
+    pic: data.pic || "",
+    penyebabMasalah: data.penyebab_masalah || "",
+    catatanPenanganan: data.catatan_penanganan || "",
   };
 }
 
@@ -478,6 +534,26 @@ export function getComplaintStats(complaints: ComplaintEntry[]) {
   const map: Record<string, number> = {};
   complaints.forEach((c) => {
     map[c.jenisComplain] = (map[c.jenisComplain] || 0) + 1;
+  });
+  return Object.entries(map).map(([name, value]) => ({ name, value }));
+}
+
+export function getComplaintCauseStats(complaints: ComplaintEntry[]) {
+  const map: Record<string, number> = {
+    "Spare Part": 0,
+    "Pengerjaan": 0,
+    "Faktor Lain": 0,
+    "Belum Diidentifikasi": 0,
+  };
+  complaints.forEach((c) => {
+    const cause = c.penyebabMasalah?.trim();
+    if (cause && map[cause] !== undefined) {
+      map[cause] += 1;
+    } else if (cause) {
+      map["Faktor Lain"] += 1;
+    } else {
+      map["Belum Diidentifikasi"] += 1;
+    }
   });
   return Object.entries(map).map(([name, value]) => ({ name, value }));
 }

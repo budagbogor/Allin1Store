@@ -1,15 +1,25 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { CalendarIcon, Plus } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { CalendarIcon, Plus, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { MEREK_KENDARAAN, MODEL_BY_MEREK, COMPLAINT_TYPES, saveComplaint, type ComplaintEntry } from "@/lib/data";
+import {
+  MEREK_KENDARAAN,
+  MODEL_BY_MEREK,
+  COMPLAINT_TYPES,
+  PENYEBAB_MASALAH_OPTIONS,
+  saveComplaint,
+  updateComplaint,
+  type ComplaintEntry,
+  type ComplaintStatus,
+} from "@/lib/data";
 import { useStoreContext } from "@/lib/storeContext";
 import { toast } from "sonner";
 
@@ -21,12 +31,20 @@ interface PrefillData {
 interface Props {
   onSuccess: () => void;
   prefillData?: PrefillData;
+  initialData?: ComplaintEntry | null;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp, onOpenChange }: Props) {
+export function ComplaintForm({
+  onSuccess,
+  prefillData,
+  initialData,
+  trigger,
+  open: openProp,
+  onOpenChange,
+}: Props) {
   const isControlled = openProp !== undefined;
   const [openInternal, setOpenInternal] = useState(false);
   const open = isControlled ? openProp! : openInternal;
@@ -41,46 +59,85 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
   const [model, setModel] = useState("");
   const [jenisComplain, setJenisComplain] = useState("");
   const [keterangan, setKeterangan] = useState("");
+  const [status, setStatus] = useState<ComplaintStatus>("Open");
+  const [pic, setPic] = useState("");
+  const [penyebabMasalah, setPenyebabMasalah] = useState("");
+  const [catatanPenanganan, setCatatanPenanganan] = useState("");
   const [saving, setSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  // Pre-fill data kendaraan saat dialog dibuka
+  const isEditing = Boolean(initialData?.id);
+
+  // Pre-fill data kendaraan / edit data saat dialog dibuka
   useEffect(() => {
-    if (open && prefillData) {
-      setMerek(prefillData.merekKendaraan as (typeof MEREK_KENDARAAN)[number]);
-      setModel(prefillData.modelKendaraan);
+    if (open) {
+      if (initialData) {
+        try {
+          setDate(initialData.tanggal ? parseISO(initialData.tanggal) : new Date());
+        } catch {
+          setDate(new Date());
+        }
+        setMerek(initialData.merekKendaraan as (typeof MEREK_KENDARAAN)[number] || "");
+        setModel(initialData.modelKendaraan || "");
+        setJenisComplain(initialData.jenisComplain || "");
+        setKeterangan(initialData.keterangan || "");
+        setStatus(initialData.status || "Open");
+        setPic(initialData.pic || "");
+        setPenyebabMasalah(initialData.penyebabMasalah || "");
+        setCatatanPenanganan(initialData.catatanPenanganan || "");
+      } else if (prefillData) {
+        setMerek(prefillData.merekKendaraan as (typeof MEREK_KENDARAAN)[number] || "");
+        setModel(prefillData.modelKendaraan || "");
+        setStatus("Open");
+      }
+    } else {
+      // Reset form saat dialog ditutup jika bukan controlled mode
+      if (!initialData) {
+        setMerek("");
+        setModel("");
+        setJenisComplain("");
+        setKeterangan("");
+        setStatus("Open");
+        setPic("");
+        setPenyebabMasalah("");
+        setCatatanPenanganan("");
+        setDate(new Date());
+      }
     }
-    if (!open) {
-      // Reset form saat dialog ditutup
-      setMerek("");
-      setModel("");
-      setJenisComplain("");
-      setKeterangan("");
-      setDate(new Date());
-    }
-  }, [open, prefillData]);
+  }, [open, prefillData, initialData]);
 
   const handleSubmit = async () => {
     if (!date || !merek || !model || !jenisComplain) {
-      toast.error("Semua field wajib harus diisi!");
+      toast.error("Tanggal, Merek, Model, dan Jenis Complain wajib diisi!");
       return;
     }
     setSaving(true);
     try {
-      await saveComplaint({
+      const complaintPayload = {
         tanggal: format(date, "yyyy-MM-dd"),
         merekKendaraan: merek,
         modelKendaraan: model,
         jenisComplain: jenisComplain,
         keterangan: keterangan,
-        status: "Open",
-      }, selectedStore);
-      toast.success("Complaint berhasil disimpan!");
+        status: status,
+        pic: pic,
+        penyebabMasalah: penyebabMasalah,
+        catatanPenanganan: catatanPenanganan,
+      };
+
+      if (isEditing && initialData) {
+        await updateComplaint(initialData.id, complaintPayload);
+        toast.success("Data complaint berhasil diperbarui!");
+      } else {
+        await saveComplaint(complaintPayload, selectedStore);
+        toast.success("Complaint berhasil disimpan!");
+      }
+
       setOpen(false);
       onSuccess();
     } catch (err) {
       console.error(err);
-      toast.error("Gagal menyimpan complaint. Pastikan tabel 'complaints' sudah ada di Supabase.");
+      toast.error("Gagal menyimpan complaint. Pastikan koneksi atau database Supabase siap.");
     } finally {
       setSaving(false);
     }
@@ -96,11 +153,15 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl text-accent">Input Complain Paska Instalasi</DialogTitle>
+          <DialogTitle className="text-xl text-accent flex items-center gap-2">
+            {isEditing ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            {isEditing ? "Edit / Penanganan Complain" : "Input Complain Paska Instalasi"}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
+          {/* Tanggal */}
           <div className="grid gap-2">
             <Label>Tanggal Temuan</Label>
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
@@ -128,40 +189,44 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
             </Popover>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Merek Kendaraan</Label>
-            <Select
-              value={merek}
-              onValueChange={(val) => {
-                setMerek(val as (typeof MEREK_KENDARAAN)[number]);
-                setModel("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih merek kendaraan" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {MEREK_KENDARAAN.map((m) => (
-                  <SelectItem key={m} value={m}>{m}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Merek & Model Kendaraan */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid gap-2">
+              <Label>Merek Kendaraan</Label>
+              <Select
+                value={merek}
+                onValueChange={(val) => {
+                  setMerek(val as (typeof MEREK_KENDARAAN)[number]);
+                  setModel("");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih merek" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {MEREK_KENDARAAN.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Model Kendaraan</Label>
+              <Select value={model} onValueChange={setModel} disabled={!merek}>
+                <SelectTrigger>
+                  <SelectValue placeholder={merek ? "Pilih model" : "Pilih merek dulu"} />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {(merek ? MODEL_BY_MEREK[merek] : []).map((md) => (
+                    <SelectItem key={md} value={md}>{md}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Model Kendaraan</Label>
-            <Select value={model} onValueChange={setModel} disabled={!merek}>
-              <SelectTrigger>
-                <SelectValue placeholder={merek ? "Pilih model kendaraan" : "Pilih merek dulu"} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {(merek ? MODEL_BY_MEREK[merek] : []).map((md) => (
-                  <SelectItem key={md} value={md}>{md}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          {/* Jenis Complain */}
           <div className="grid gap-2">
             <Label>Jenis Complain</Label>
             <Select value={jenisComplain} onValueChange={setJenisComplain}>
@@ -176,21 +241,82 @@ export function ComplaintForm({ onSuccess, prefillData, trigger, open: openProp,
             </Select>
           </div>
 
+          {/* Keterangan Masalah */}
           <div className="grid gap-2">
-            <Label>Keterangan Tambahan</Label>
+            <Label>Keterangan Deskripsi Complain</Label>
             <Textarea
-              placeholder="Jelaskan detail complain..."
+              placeholder="Jelaskan detail masalah komplain dari pelanggan..."
               value={keterangan}
               onChange={(e) => setKeterangan(e.target.value)}
-              className="min-h-[100px]"
+              className="min-h-[80px]"
             />
           </div>
 
+          <div className="border-t pt-3 mt-1 space-y-4">
+            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Penanganan & Resolusi Complain
+            </h4>
+
+            {/* Status & PIC */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Status Penanganan</Label>
+                <Select value={status} onValueChange={(val) => setStatus(val as ComplaintStatus)}>
+                  <SelectTrigger className="font-semibold">
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Open" className="text-red-600 font-medium">🔴 Open</SelectItem>
+                    <SelectItem value="In Progress" className="text-amber-600 font-medium">🟡 In Progress</SelectItem>
+                    <SelectItem value="Resolved" className="text-blue-600 font-medium">🔵 Resolved</SelectItem>
+                    <SelectItem value="Closed" className="text-emerald-600 font-medium">🟢 Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label>PIC Yang Menangani</Label>
+                <Input
+                  placeholder="Nama Mekanik / SA / PIC"
+                  value={pic}
+                  onChange={(e) => setPic(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Penyebab Masalah */}
+            <div className="grid gap-2">
+              <Label>Kategori Penyebab Masalah</Label>
+              <Select value={penyebabMasalah} onValueChange={setPenyebabMasalah}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih kesimpulan penyebab masalah" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PENYEBAB_MASALAH_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Catatan Penanganan & Solusi */}
+            <div className="grid gap-2">
+              <Label>Catatan / Kesimpulan Penanganan & Solusi</Label>
+              <Textarea
+                placeholder="Tuliskan kesimpulan investigasi penyebab dan tindakan yang sudah/akan dilakukan..."
+                value={catatanPenanganan}
+                onChange={(e) => setCatatanPenanganan(e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+
           <Button onClick={handleSubmit} disabled={saving} className="w-full mt-2 bg-accent hover:bg-accent/90">
-            {saving ? "Menyimpan..." : "Simpan Complain"}
+            {saving ? "Menyimpan..." : isEditing ? "Simpan Perubahan" : "Simpan Complain"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
