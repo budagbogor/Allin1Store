@@ -168,7 +168,7 @@ export default function Dashboard() {
   const totalSales = filteredEntries.reduce((sum, e) => sum + e.jumlahSales, 0);
   const monthlySales = getMonthlySales(filteredEntries);
   const monthlyEntries = getMonthlyEntries(filteredEntries);
-  const topPekerjaan = getTopPekerjaan(filteredEntries, 10);
+  const topPekerjaan = getTopPekerjaan(filteredEntries, Number.POSITIVE_INFINITY);
   const topModel = getTopModelKendaraan(filteredEntries, 20);
   const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
     filteredEntries,
@@ -507,22 +507,29 @@ export default function Dashboard() {
               <div className="space-y-6">
                 <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle className="text-lg">Top 10 Jenis Pekerjaan</CardTitle>
+                    <CardTitle className="text-lg">Peringkat Jenis Pekerjaan</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {topPekerjaan.map((item) => {
-                        const pct = (item.value / maxPekerjaanSales) * 100;
-                        return (
-                          <div key={item.name} className="space-y-1.5">
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="truncate font-medium">{item.name}</span>
-                              <span className="font-semibold text-primary shrink-0 ml-2">{formatIDR(item.value)}</span>
+                    <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+                      {topPekerjaan.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Belum ada data jenis pekerjaan.</p>
+                      ) : (
+                        topPekerjaan.map((item, i) => {
+                          const pct = (item.value / maxPekerjaanSales) * 100;
+                          return (
+                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1 rounded transition-colors">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="truncate flex items-center gap-2">
+                                  <span className="text-xs font-bold text-muted-foreground w-5 text-right shrink-0">{i + 1}.</span>
+                                  <span className="font-medium">{item.name}</span>
+                                </span>
+                                <span className="font-semibold text-primary shrink-0 ml-2">{formatIDR(item.value)}</span>
+                              </div>
+                              <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
                             </div>
-                            <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   </CardContent>
                 </Card>
