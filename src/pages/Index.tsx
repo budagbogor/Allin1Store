@@ -175,6 +175,8 @@ export default function Dashboard() {
     topPekerjaan.map((t) => t.name)
   );
   const unitCount = filteredEntries.length;
+  const maxPekerjaanSales = Math.max(...topPekerjaan.map((t) => t.value), 1);
+  const maxModelCount = Math.max(...topModel.map((m) => m.value), 1);
 
   let currentTotalSalesToko = 0;
   if (selectedMonth === "all") {
@@ -509,12 +511,18 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {topPekerjaan.map((item, i) => (
-                        <div key={item.name} className="flex justify-between items-center text-sm">
-                          <span className="truncate">{item.name}</span>
-                          <span className="font-semibold text-primary">{formatIDR(item.value)}</span>
-                        </div>
-                      ))}
+                      {topPekerjaan.map((item) => {
+                        const pct = (item.value / maxPekerjaanSales) * 100;
+                        return (
+                          <div key={item.name} className="space-y-1.5">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="truncate font-medium">{item.name}</span>
+                              <span className="font-semibold text-primary shrink-0 ml-2">{formatIDR(item.value)}</span>
+                            </div>
+                            <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -524,21 +532,27 @@ export default function Dashboard() {
                     <CardTitle className="text-lg">Top 20 Model Kendaraan</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                    <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
                       {topModel.length === 0 ? (
                         <p className="text-xs text-muted-foreground">Belum ada data model kendaraan.</p>
                       ) : (
-                        topModel.map((item, i) => (
-                          <div key={item.name} className="flex justify-between items-center text-sm hover:bg-muted/50 p-1 rounded transition-colors">
-                            <span className="truncate flex items-center gap-2">
-                              <span className="text-xs font-bold text-muted-foreground w-5 text-right">{i + 1}.</span>
-                              <span className="font-medium">{item.name}</span>
-                            </span>
-                            <Badge variant="secondary" className="font-semibold text-xs ml-2 shrink-0">
-                              {item.value} Unit
-                            </Badge>
-                          </div>
-                        ))
+                        topModel.map((item, i) => {
+                          const pct = (item.value / maxModelCount) * 100;
+                          return (
+                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1 rounded transition-colors">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="truncate flex items-center gap-2">
+                                  <span className="text-xs font-bold text-muted-foreground w-5 text-right shrink-0">{i + 1}.</span>
+                                  <span className="font-medium">{item.name}</span>
+                                </span>
+                                <Badge variant="secondary" className="font-semibold text-xs ml-2 shrink-0">
+                                  {item.value} Unit
+                                </Badge>
+                              </div>
+                              <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </CardContent>
