@@ -516,8 +516,12 @@ export default function Dashboard() {
                       ) : (
                         topPekerjaan.map((item, i) => {
                           const pct = (item.value / maxPekerjaanSales) * 100;
+                          const stats = topModelPerPekerjaan[item.name];
+                          const topModelsText = (stats?.models || [])
+                            .map((m) => `${m.name} (${m.value})`)
+                            .join(", ");
                           return (
-                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1 rounded transition-colors">
+                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1.5 rounded transition-colors">
                               <div className="flex justify-between items-center text-sm">
                                 <span className="truncate flex items-center gap-2">
                                   <span className="text-xs font-bold text-muted-foreground w-5 text-right shrink-0">{i + 1}.</span>
@@ -526,6 +530,25 @@ export default function Dashboard() {
                                 <span className="font-semibold text-primary shrink-0 ml-2">{formatIDR(item.value)}</span>
                               </div>
                               <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                              {stats?.totalUnit ? (
+                                <div className="flex items-start justify-between gap-2 mt-1">
+                                  <p
+                                    className="text-[11px] text-muted-foreground min-w-0 flex-1 whitespace-normal break-words leading-snug"
+                                    style={{
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 3,
+                                      WebkitBoxOrient: "vertical",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    <span className="font-medium text-foreground/70">Kendaraan: </span>
+                                    {topModelsText || "-"}
+                                  </p>
+                                  <span className="text-[10px] text-muted-foreground shrink-0 font-medium bg-muted/60 px-1.5 py-0.5 rounded">
+                                    {stats.totalUnit} unit
+                                  </span>
+                                </div>
+                              ) : null}
                             </div>
                           );
                         })
