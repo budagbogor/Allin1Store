@@ -216,6 +216,22 @@ export const BULAN = [
   "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
 ] as const;
 
+export const MONTH_COLORS = [
+  "#3b82f6", // Jan - Blue
+  "#10b981", // Feb - Emerald
+  "#f59e0b", // Mar - Amber
+  "#8b5cf6", // Apr - Purple
+  "#ec4899", // Mei - Pink
+  "#06b6d4", // Jun - Cyan
+  "#f97316", // Jul - Orange
+  "#ef4444", // Agu - Red
+  "#14b8a6", // Sep - Teal
+  "#6366f1", // Okt - Indigo
+  "#84cc16", // Nov - Lime
+  "#d946ef", // Des - Fuchsia
+] as const;
+
+
 export interface SalesEntry {
   id: string;
   tanggal: string;

@@ -20,6 +20,7 @@ import {
   getTopModelKendaraanPerPekerjaan,
   getStoreTarget,
   BULAN,
+  MONTH_COLORS,
   deleteEntry,
   getMonthlyReports,
   splitJenisPekerjaan,
@@ -169,7 +170,7 @@ export default function Dashboard() {
   const monthlySales = getMonthlySales(filteredEntries);
   const monthlyEntries = getMonthlyEntries(filteredEntries);
   const topPekerjaan = getTopPekerjaan(filteredEntries, Number.POSITIVE_INFINITY);
-  const topModel = getTopModelKendaraan(filteredEntries, 20);
+  const topModel = getTopModelKendaraan(filteredEntries, Number.POSITIVE_INFINITY);
   const topModelPerPekerjaan = getTopModelKendaraanPerPekerjaan(
     filteredEntries,
     topPekerjaan.map((t) => t.name)
@@ -468,7 +469,7 @@ export default function Dashboard() {
                           />
                           <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
                             {chartData.map((_, i) => (
-                              <Cell key={`cell-${i}`} fill={i === new Date().getMonth() ? "hsl(var(--accent))" : "hsl(var(--primary))"} />
+                              <Cell key={`cell-${i}`} fill={MONTH_COLORS[i % MONTH_COLORS.length]} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -494,7 +495,7 @@ export default function Dashboard() {
                           />
                           <Bar dataKey="entries" radius={[4, 4, 0, 0]}>
                             {chartDataEntries.map((_, i) => (
-                              <Cell key={`cell-${i}`} fill={i === new Date().getMonth() ? "hsl(var(--accent))" : "hsl(var(--primary))"} />
+                              <Cell key={`cell-${i}`} fill={MONTH_COLORS[i % MONTH_COLORS.length]} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -506,11 +507,11 @@ export default function Dashboard() {
 
               <div className="space-y-6">
                 <Card className="glass-card">
-                  <CardHeader>
+                  <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Peringkat Jenis Pekerjaan</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+                  <CardContent className="pt-0">
+                    <div className="space-y-1 max-h-[550px] overflow-y-auto pr-1">
                       {topPekerjaan.length === 0 ? (
                         <p className="text-xs text-muted-foreground">Belum ada data jenis pekerjaan.</p>
                       ) : (
@@ -521,30 +522,25 @@ export default function Dashboard() {
                             .map((m) => `${m.name} (${m.value})`)
                             .join(", ");
                           return (
-                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1.5 rounded transition-colors">
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="truncate flex items-center gap-2">
-                                  <span className="text-xs font-bold text-muted-foreground w-5 text-right shrink-0">{i + 1}.</span>
-                                  <span className="font-medium">{item.name}</span>
+                            <div key={item.name} className="hover:bg-muted/30 p-1 rounded transition-colors border-b border-border/30 last:border-0">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="truncate flex items-center gap-1.5 min-w-0">
+                                  <span className="text-[11px] font-bold text-muted-foreground w-4 text-right shrink-0">{i + 1}.</span>
+                                  <span className="font-semibold text-foreground truncate">{item.name}</span>
                                 </span>
-                                <span className="font-semibold text-primary shrink-0 ml-2">{formatIDR(item.value)}</span>
+                                <span className="font-bold text-primary shrink-0 ml-1.5 text-xs">{formatIDR(item.value)}</span>
                               </div>
-                              <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                              <Progress value={pct} className="h-1 my-0.5 bg-slate-100 dark:bg-slate-800" />
                               {stats?.totalUnit ? (
-                                <div className="flex items-start justify-between gap-2 mt-1">
+                                <div className="flex items-center justify-between gap-1.5 text-[10px] text-muted-foreground">
                                   <p
-                                    className="text-[11px] text-muted-foreground min-w-0 flex-1 whitespace-normal break-words leading-snug"
-                                    style={{
-                                      display: "-webkit-box",
-                                      WebkitLineClamp: 3,
-                                      WebkitBoxOrient: "vertical",
-                                      overflow: "hidden",
-                                    }}
+                                    className="truncate min-w-0 flex-1 leading-tight"
+                                    title={`Kendaraan: ${topModelsText || "-"}`}
                                   >
                                     <span className="font-medium text-foreground/70">Kendaraan: </span>
                                     {topModelsText || "-"}
                                   </p>
-                                  <span className="text-[10px] text-muted-foreground shrink-0 font-medium bg-muted/60 px-1.5 py-0.5 rounded">
+                                  <span className="text-[9px] text-muted-foreground shrink-0 font-medium bg-muted/60 px-1 py-0.2 rounded">
                                     {stats.totalUnit} unit
                                   </span>
                                 </div>
@@ -558,28 +554,28 @@ export default function Dashboard() {
                 </Card>
 
                 <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Top 20 Model Kendaraan</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Peringkat Model Kendaraan</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+                  <CardContent className="pt-0">
+                    <div className="space-y-1 max-h-[500px] overflow-y-auto pr-1">
                       {topModel.length === 0 ? (
                         <p className="text-xs text-muted-foreground">Belum ada data model kendaraan.</p>
                       ) : (
                         topModel.map((item, i) => {
                           const pct = (item.value / maxModelCount) * 100;
                           return (
-                            <div key={item.name} className="space-y-1.5 hover:bg-muted/30 p-1 rounded transition-colors">
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="truncate flex items-center gap-2">
-                                  <span className="text-xs font-bold text-muted-foreground w-5 text-right shrink-0">{i + 1}.</span>
-                                  <span className="font-medium">{item.name}</span>
+                            <div key={item.name} className="hover:bg-muted/30 py-0.5 px-1 rounded transition-colors">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="truncate flex items-center gap-1.5 min-w-0">
+                                  <span className="text-[10px] font-bold text-muted-foreground w-4 text-right shrink-0">{i + 1}.</span>
+                                  <span className="font-medium truncate text-xs">{item.name}</span>
                                 </span>
-                                <Badge variant="secondary" className="font-semibold text-xs ml-2 shrink-0">
+                                <Badge variant="secondary" className="font-semibold text-[10px] px-1.5 py-0 ml-1 shrink-0 h-4">
                                   {item.value} Unit
                                 </Badge>
                               </div>
-                              <Progress value={pct} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                              <Progress value={pct} className="h-1 mt-0.5 bg-slate-100 dark:bg-slate-800" />
                             </div>
                           );
                         })
