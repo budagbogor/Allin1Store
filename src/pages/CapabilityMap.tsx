@@ -252,17 +252,19 @@ export default function CapabilityMapPage() {
 
   return (
     <div className="min-h-dvh bg-slate-100 text-slate-800 flex flex-col font-sans print:bg-white print:text-black">
-      {/* Dynamic Print Compact CSS Styles */}
+      {/* Dynamic Print Compact CSS Styles for A4 Portrait 1-Page */}
       <style>{`
         @media print {
           @page {
-            size: A4 landscape;
-            margin: 4mm 5mm;
+            size: A4 portrait;
+            margin: 3mm 4mm;
           }
           body {
             background-color: #ffffff !important;
             color: #0f172a !important;
-            font-size: 10px !important;
+            font-size: 9.5px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .print-container {
             max-width: 100% !important;
@@ -272,30 +274,42 @@ export default function CapabilityMapPage() {
             box-shadow: none !important;
             border: 1px solid #cbd5e1 !important;
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .print-compact-p {
-            padding: 8px 12px !important;
-          }
-          .print-compact-gap {
-            gap: 6px !important;
-          }
-          .print-compact-row {
-            padding-top: 2px !important;
-            padding-bottom: 2px !important;
-          }
-          .print-compact-input {
-            height: 22px !important;
-            font-size: 10px !important;
-            border-bottom: 1px solid #cbd5e1 !important;
-          }
-          .print-compact-bar {
-            height: 8px !important;
-          }
-          .print-stat-box {
             padding: 4px 8px !important;
           }
+          .print-compact-gap {
+            gap: 4px !important;
+          }
+          .print-compact-row {
+            padding-top: 1px !important;
+            padding-bottom: 1px !important;
+          }
+          .print-compact-input {
+            height: 20px !important;
+            font-size: 9px !important;
+            padding: 0 4px !important;
+          }
+          .print-compact-bar {
+            height: 6px !important;
+          }
+          .print-stat-box {
+            padding: 3px 6px !important;
+          }
           .print-stat-num {
-            font-size: 14px !important;
+            font-size: 12px !important;
+          }
+          table {
+            min-width: 100% !important;
+            width: 100% !important;
+          }
+          th, td {
+            padding: 2px 2px !important;
+            font-size: 9px !important;
+          }
+          button {
+            border-width: 1px !important;
           }
         }
       `}</style>
