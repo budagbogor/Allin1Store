@@ -811,3 +811,90 @@ export function getAvgLeadtimeMenit(entries: SalesEntry[]): number {
 export function getEntriesWithLangkah(entries: SalesEntry[]) {
   return entries.filter(e => e.langkahPengerjaan && e.langkahPengerjaan.trim().length > 0);
 }
+
+// --- Capability Map Types & Persistence ---
+
+export interface MechanicRow {
+  id: number | string;
+  nama: string;
+  masa: string;
+  checks: boolean[];
+}
+
+export interface CapabilityMapData {
+  toko: string;
+  jobs: string[];
+  rows: MechanicRow[];
+}
+
+function slugifyStore(s: string): string {
+  return (s || 'default').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'default';
+}
+
+export async function getCapabilityMap(storeName: string): Promise<CapabilityMapData | null> {
+  const localKey = `mobeng-capmap:${slugifyStore(storeName)}`;
+  try {
+    const { data, error } = await supabase
+      .from("capability_maps")
+      .select("jobs, rows, store_name")
+      .eq("store_name", storeName)
+      .maybeSingle();
+
+    if (!error && data) {
+      return {
+        toko: data.store_name,
+        jobs: Array.isArray(data.jobs) ? data.jobs : [],
+        rows: Array.isArray(data.rows) ? data.rows : [],
+      };
+    }
+  } catch (err) {
+    console.warn("Supabase fetch capability map failed, falling back to localStorage:", err);
+  }
+
+  // Fallback to localStorage
+  try {
+    const raw = localStorage.getItem(localKey);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        toko: parsed.toko || storeName,
+        jobs: parsed.jobs || [],
+        rows: parsed.rows || [],
+      };
+    }
+  } catch (e) {
+    console.error("Failed to parse localStorage capability map data:", e);
+  }
+
+  return null;
+}
+
+export async function saveCapabilityMap(data: CapabilityMapData, storeName: string): Promise<void> {
+  const localKey = `mobeng-capmap:${slugifyStore(storeName)}`;
+  
+  // Save to localStorage as immediate local backup
+  try {
+    localStorage.setItem(localKey, JSON.stringify(data));
+  } catch (e) {
+    console.error("Failed to save to localStorage:", e);
+  }
+
+  // Save to Supabase
+  const { error } = await supabase
+    .from("capability_maps")
+    .upsert(
+      {
+        store_name: storeName,
+        jobs: data.jobs,
+        rows: data.rows,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_name" }
+    );
+
+  if (error) {
+    console.error("Supabase upsert capability_maps error:", error);
+    throw error;
+  }
+}
+

@@ -94,3 +94,20 @@ CREATE POLICY "Allow public read store_targets" ON public.store_targets FOR SELE
 CREATE POLICY "Allow public insert store_targets" ON public.store_targets FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update store_targets" ON public.store_targets FOR UPDATE USING (true);
 CREATE POLICY "Allow public delete store_targets" ON public.store_targets FOR DELETE USING (true);
+
+
+-- 5. TABLE: capability_maps
+CREATE TABLE IF NOT EXISTS public.capability_maps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    store_name TEXT NOT NULL UNIQUE,
+    jobs JSONB DEFAULT '[]'::jsonb,
+    rows JSONB DEFAULT '[]'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.capability_maps ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read capability_maps" ON public.capability_maps FOR SELECT USING (true);
+CREATE POLICY "Allow public insert capability_maps" ON public.capability_maps FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update capability_maps" ON public.capability_maps FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete capability_maps" ON public.capability_maps FOR DELETE USING (true);
+

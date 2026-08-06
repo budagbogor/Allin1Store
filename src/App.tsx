@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Complaints from "./pages/Complaints.tsx";
 import Analisa from "./pages/Analisa.tsx";
+import CapabilityMap from "./pages/CapabilityMap.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import StoreSelector from "./pages/StoreSelector.tsx";
 import { StoreProvider, useStoreContext } from "./lib/storeContext.tsx";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
             <Route path="/analisa" element={<ProtectedRoute><Analisa /></ProtectedRoute>} />
+            <Route path="/capability-map" element={<ProtectedRoute><CapabilityMap /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

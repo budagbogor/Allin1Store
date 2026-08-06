@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import {
-  ArrowLeft, Clock, Wrench, ClipboardList, Search, Timer, ChevronDown, ChevronUp,
+  ArrowLeft, Clock, Wrench, ClipboardList, Search, Timer, ChevronDown, ChevronUp, Award,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -106,7 +106,7 @@ export default function AnalisaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { selectedStore } = useStoreContext();
 
-  const fetchEntries = useCallback(async () => {
+  const fetchEntriesData = useCallback(async () => {
     if (!selectedStore) return;
     try {
       const data = await getEntries(selectedStore);
@@ -120,8 +120,8 @@ export default function AnalisaPage() {
   }, [selectedStore]);
 
   useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+    fetchEntriesData();
+  }, [fetchEntriesData]);
 
   const leadtimeByPekerjaan = getLeadtimeByPekerjaan(allEntries);
   const topTools = getTopSpecialTools(allEntries);
@@ -173,9 +173,17 @@ export default function AnalisaPage() {
               <p className="text-indigo-300 text-xs font-body">{selectedStore}</p>
             </div>
           </div>
-          <div className="text-right hidden sm:block">
-            <p className="text-indigo-200 text-xs">{allEntries.length} total data pekerjaan</p>
-            <p className="text-indigo-300 text-xs">{totalWithLeadtime} dengan data leadtime</p>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <Link to="/capability-map">
+              <Button variant="outline" size="sm" className="border-amber-400/30 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 gap-1.5 text-xs">
+                <Award className="h-4 w-4 text-amber-400" />
+                <span>Capability Map</span>
+              </Button>
+            </Link>
+            <div className="text-right hidden sm:block">
+              <p className="text-indigo-200 text-xs">{allEntries.length} total data pekerjaan</p>
+              <p className="text-indigo-300 text-xs">{totalWithLeadtime} dengan data leadtime</p>
+            </div>
           </div>
         </div>
       </header>

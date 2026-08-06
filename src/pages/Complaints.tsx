@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
-import { AlertCircle, CheckCircle2, Clock, Trash2, ArrowLeft, MessageSquare, Edit, CheckCircle, UserCheck, Wrench } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Trash2, ArrowLeft, MessageSquare, Edit, CheckCircle, UserCheck, Wrench, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -91,7 +91,13 @@ export default function ComplaintsPage() {
               <p className="text-slate-400 text-xs font-body">{selectedStore}</p>
             </div>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto items-center">
+            <Link to="/capability-map">
+              <Button variant="outline" size="sm" className="border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 gap-1.5 text-xs">
+                <Award className="h-4 w-4 text-amber-400" />
+                <span>Capability Map</span>
+              </Button>
+            </Link>
             <ComplaintForm onSuccess={fetchComplaints} />
           </div>
         </div>

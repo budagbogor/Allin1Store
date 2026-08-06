@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle, MessageSquarePlus, BarChart3, ChevronDown, MessageSquare } from "lucide-react";
+import { Car, TrendingUp, Target, Trash2, AlertCircle, Download, Edit2, AlertTriangle, MessageSquarePlus, BarChart3, ChevronDown, MessageSquare, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useStoreContext } from "@/lib/storeContext";
+
 
 const ReportContent = ({ report, showMonth = true }: { report: MonthlyReport; showMonth?: boolean }) => (
   <div className="space-y-3">
@@ -295,6 +296,13 @@ export default function Dashboard() {
                     <Link to="/analisa" className="flex items-center gap-2 w-full px-2 py-1.5">
                       <BarChart3 className="h-4 w-4 text-indigo-500" />
                       <span>Analisa Teknis</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild className="focus:bg-amber-50 focus:text-amber-600 cursor-pointer">
+                    <Link to="/capability-map" className="flex items-center gap-2 w-full px-2 py-1.5">
+                      <Award className="h-4 w-4 text-amber-500" />
+                      <span>Form Capability Map</span>
                     </Link>
                   </DropdownMenuItem>
                   
