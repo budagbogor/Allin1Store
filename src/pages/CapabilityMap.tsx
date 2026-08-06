@@ -389,43 +389,43 @@ export default function CapabilityMapPage() {
       <main className="container mx-auto px-2 sm:px-4 py-6 max-w-5xl flex-1 space-y-6 print:p-0 print:max-w-none print:m-0 print:space-y-2">
         <div className="bg-white border border-slate-300 rounded-xl shadow-xl overflow-hidden print-container">
           {/* Ticket Header Section */}
-          <div className="bg-slate-800 text-white border-b-4 border-amber-400 p-5 sm:p-6 print-compact-p relative">
+          <div className="bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-slate-100 text-slate-900 border-b-4 border-amber-500 p-5 sm:p-6 print-compact-p relative">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 print-compact-gap">
               <div>
-                <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase tracking-widest mb-1">
-                  <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse print-hidden"></span>
+                <div className="flex items-center gap-2 text-amber-700 font-mono text-xs font-bold uppercase tracking-widest mb-1">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse print-hidden"></span>
                   MOBENG WORKSHOP OPS
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide uppercase font-heading">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-wide uppercase font-heading">
                   Capability Map Teknisi
                 </h2>
-                <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+                <p className="text-slate-700 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed font-medium">
                   Pemetaan kompetensi mekanik per toko. Isi data mekanik, tandai penguasaan tiap jenis pekerjaan (No. 1–{jobs.length}), dan lihat persentase kesiapan tim secara otomatis.
                 </p>
               </div>
 
-              <div className="text-right font-mono text-xs text-slate-300 bg-slate-900/80 px-3 py-1.5 rounded border border-slate-700 self-end sm:self-start">
+              <div className="text-right font-mono text-xs text-slate-700 bg-white/90 px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm self-end sm:self-start">
                 <div>FORM-CM</div>
-                <div className="text-amber-400 font-bold">{todayDate}</div>
+                <div className="text-amber-700 font-bold">{todayDate}</div>
               </div>
             </div>
 
             {/* Store Banner */}
-            <div className="mt-4 pt-3 border-t border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="mt-4 pt-3 border-t border-slate-300/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="w-full sm:max-w-md">
-                <label className="block text-[10px] font-mono uppercase text-slate-300 mb-0.5 tracking-wider">
+                <label className="block text-[10px] font-mono uppercase text-slate-600 font-bold mb-0.5 tracking-wider">
                   Toko Saat Ini
                 </label>
                 <Input
                   type="text"
                   value={selectedStore}
                   disabled
-                  className="bg-slate-900 border-slate-700 text-amber-300 font-bold text-base h-9 print-compact-input"
+                  className="bg-white border-slate-300 text-amber-900 font-bold text-base h-9 shadow-sm print-compact-input"
                 />
               </div>
               <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="text-slate-300">Status:</span>
-                <Badge variant="outline" className="bg-amber-400/20 text-amber-300 border-amber-400/40 font-bold">
+                <span className="text-slate-600 font-bold">Status:</span>
+                <Badge variant="outline" className="bg-amber-100 text-amber-900 border-amber-300 font-bold">
                   {statusText}
                 </Badge>
               </div>
@@ -489,23 +489,23 @@ export default function CapabilityMapPage() {
             ) : (
               <table className="w-full text-xs text-left border-collapse border border-slate-300 bg-white rounded-lg overflow-hidden min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-800 text-slate-100 font-mono uppercase text-[11px] border-b border-slate-700">
-                    <th className="py-2.5 px-2 text-center w-9 border-r border-slate-700">No</th>
-                    <th className="py-2.5 px-3 min-w-[150px] border-r border-slate-700">Nama Mekanik</th>
-                    <th className="py-2.5 px-3 min-w-[100px] border-r border-slate-700">Masa Kerja</th>
+                  <tr className="bg-slate-200 text-slate-900 font-mono uppercase text-[11px] border-b-2 border-slate-300 font-bold">
+                    <th className="py-2.5 px-2 text-center w-9 border-r border-slate-300">No</th>
+                    <th className="py-2.5 px-3 min-w-[150px] border-r border-slate-300">Nama Mekanik</th>
+                    <th className="py-2.5 px-3 min-w-[100px] border-r border-slate-300">Masa Kerja</th>
                     {jobs.map((j, i) => (
                       <th
                         key={i}
-                        className="py-2 px-1 text-center min-w-[50px] border-r border-slate-700 text-[10px]"
+                        className="py-2 px-1 text-center min-w-[50px] border-r border-slate-300 text-[10px]"
                         title={j}
                       >
                         <div className="flex flex-col items-center">
-                          <span className="text-amber-400 font-bold">{i + 1}</span>
-                          <span className="truncate max-w-[65px] inline-block font-normal text-slate-300">{j}</span>
+                          <span className="text-amber-700 font-bold">{i + 1}</span>
+                          <span className="truncate max-w-[65px] inline-block font-bold text-slate-800">{j}</span>
                         </div>
                       </th>
                     ))}
-                    <th className="py-2.5 px-2 text-center min-w-[55px] border-r border-slate-700">Skor</th>
+                    <th className="py-2.5 px-2 text-center min-w-[55px] border-r border-slate-300">Skor</th>
                     <th className="py-2.5 px-2 text-center w-8 print-hidden"></th>
                   </tr>
                 </thead>
@@ -525,7 +525,7 @@ export default function CapabilityMapPage() {
                           key={r.id}
                           className="border-b border-slate-200 hover:bg-slate-50 transition-colors print-compact-row"
                         >
-                          <td className="py-1.5 px-2 text-center font-mono text-slate-500 border-r border-slate-200">
+                          <td className="py-1.5 px-2 text-center font-mono text-slate-600 font-bold border-r border-slate-200">
                             {idx + 1}
                           </td>
                           <td className="py-1 px-2 border-r border-slate-200">
@@ -534,7 +534,7 @@ export default function CapabilityMapPage() {
                               value={r.nama}
                               placeholder="Nama mekanik"
                               onChange={(e) => updateMechanicText(r.id, "nama", e.target.value)}
-                              className="h-7 text-xs font-medium bg-white border-slate-300 text-slate-900 focus-visible:ring-amber-500"
+                              className="h-7 text-xs font-semibold bg-white border-slate-300 text-slate-900 focus-visible:ring-amber-500"
                             />
                           </td>
                           <td className="py-1 px-2 border-r border-slate-200">
@@ -543,7 +543,7 @@ export default function CapabilityMapPage() {
                               value={r.masa}
                               placeholder="cth: 2 tahun"
                               onChange={(e) => updateMechanicText(r.id, "masa", e.target.value)}
-                              className="h-7 text-xs bg-white border-slate-300 text-slate-700 focus-visible:ring-amber-500"
+                              className="h-7 text-xs bg-white border-slate-300 text-slate-800 font-medium focus-visible:ring-amber-500"
                             />
                           </td>
 
@@ -557,7 +557,7 @@ export default function CapabilityMapPage() {
                                   onClick={() => toggleCheck(r.id, ji)}
                                   className={`w-6 h-6 mx-auto rounded flex items-center justify-center font-bold text-xs transition-all duration-150 ${
                                     checked
-                                      ? "bg-amber-400 text-slate-950 border border-amber-500 shadow-sm scale-105"
+                                      ? "bg-amber-400 text-slate-950 border border-amber-600 shadow-sm scale-105"
                                       : "bg-slate-100 text-transparent border border-slate-300 hover:border-amber-500"
                                   }`}
                                 >
@@ -572,7 +572,7 @@ export default function CapabilityMapPage() {
                               variant="outline"
                               className={`font-mono text-xs font-bold border ${
                                 score === jobs.length
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
                                   : score >= Math.ceil(jobs.length / 2)
                                   ? "bg-amber-100 text-amber-900 border-amber-300"
                                   : "bg-slate-100 text-slate-700 border-slate-300"
@@ -602,23 +602,23 @@ export default function CapabilityMapPage() {
                 {/* Table Footer: % MEKANIK YANG MENGUASAI */}
                 {rows.length > 0 && (
                   <tfoot>
-                    <tr className="bg-slate-800 text-slate-100 font-mono text-xs border-t-2 border-slate-700">
-                      <td colSpan={3} className="py-2.5 px-4 text-right font-bold tracking-wider text-amber-400 border-r border-slate-700 uppercase">
+                    <tr className="bg-slate-200 text-slate-900 font-mono text-xs border-t-2 border-slate-300">
+                      <td colSpan={3} className="py-2.5 px-4 text-right font-bold tracking-wider text-amber-800 border-r border-slate-300 uppercase">
                         % Mekanik Menguasai
                       </td>
                       {jobs.map((_, ji) => {
                         const pct = getJobPct(ji);
                         return (
-                          <td key={ji} className="py-1.5 px-1 text-center border-r border-slate-700 relative overflow-hidden">
+                          <td key={ji} className="py-1.5 px-1 text-center border-r border-slate-300 relative overflow-hidden">
                             <div
-                              className="absolute bottom-0 left-0 right-0 bg-amber-400/30 transition-all duration-300"
+                              className="absolute bottom-0 left-0 right-0 bg-amber-400/40 transition-all duration-300"
                               style={{ height: `${pct}%` }}
                             />
-                            <span className="relative z-10 font-bold text-[11px] text-amber-300">{pct}%</span>
+                            <span className="relative z-10 font-bold text-[11px] text-slate-950">{pct}%</span>
                           </td>
                         );
                       })}
-                      <td className="border-r border-slate-700"></td>
+                      <td className="border-r border-slate-300"></td>
                       <td className="print-hidden"></td>
                     </tr>
                   </tfoot>
@@ -688,10 +688,10 @@ export default function CapabilityMapPage() {
           {/* Summary Panel */}
           <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 print-compact-p">
             <Card className="bg-white border-slate-300 text-slate-800 shadow-sm print:shadow-none print:border-slate-300">
-              <CardHeader className="py-2.5 px-4 bg-slate-800 text-white border-b border-slate-700">
-                <CardTitle className="text-xs font-mono uppercase tracking-widest text-amber-400 flex items-center justify-between">
+              <CardHeader className="py-2.5 px-4 bg-slate-200 text-slate-900 border-b border-slate-300">
+                <CardTitle className="text-xs font-mono uppercase tracking-widest text-amber-800 flex items-center justify-between">
                   <span>Rekap Kesiapan per Jenis Pekerjaan</span>
-                  <span className="text-slate-300 font-normal text-[10px]">Toko: {selectedStore}</span>
+                  <span className="text-slate-600 font-semibold text-[10px]">Toko: {selectedStore}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-4 space-y-3 print-compact-p">
@@ -700,10 +700,10 @@ export default function CapabilityMapPage() {
                     const pct = getJobPct(ji);
                     return (
                       <div key={ji} className="flex items-center gap-2.5 text-xs font-mono">
-                        <span className="h-5 w-5 rounded bg-slate-800 text-amber-400 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        <span className="h-5 w-5 rounded bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center justify-center shrink-0 border border-amber-500 shadow-sm">
                           {ji + 1}
                         </span>
-                        <span className="w-44 sm:w-56 shrink-0 text-slate-800 font-medium truncate" title={jobName}>
+                        <span className="w-44 sm:w-56 shrink-0 text-slate-900 font-semibold truncate" title={jobName}>
                           {jobName}
                         </span>
                         <div className="flex-1 h-3 bg-slate-200 rounded overflow-hidden border border-slate-300 relative print-compact-bar">
@@ -712,7 +712,7 @@ export default function CapabilityMapPage() {
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="w-10 text-right font-bold text-slate-900 text-[11px]">{pct}%</span>
+                        <span className="w-10 text-right font-bold text-slate-950 text-[11px]">{pct}%</span>
                       </div>
                     );
                   })}
