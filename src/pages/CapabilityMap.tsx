@@ -638,15 +638,6 @@ export default function CapabilityMapPage() {
             </Button>
 
             <Button
-              onClick={addJobType}
-              variant="outline"
-              className="border-amber-500/40 bg-amber-50 text-amber-800 hover:bg-amber-100 font-mono text-xs gap-2 font-bold"
-            >
-              <Plus className="h-4 w-4 text-amber-600" />
-              + Tambah Jenis Pekerjaan
-            </Button>
-
-            <Button
               onClick={handleSave}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs gap-2 font-bold shadow-sm"
             >
