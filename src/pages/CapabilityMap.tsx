@@ -370,17 +370,21 @@ export default function CapabilityMapPage() {
                 + Tambah Jenis Pekerjaan
               </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {jobs.map((jobName, i) => (
-                <div key={i} className="group relative flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-md border border-slate-700/60 focus-within:border-amber-400 transition-colors">
-                  <span className="h-6 w-6 rounded bg-amber-500 text-slate-950 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                <div
+                  key={i}
+                  title={jobName}
+                  className="group relative flex items-center gap-2 bg-slate-900/90 p-2 rounded-lg border border-slate-700/60 focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/50 transition-all shadow-sm"
+                >
+                  <span className="h-7 w-7 rounded bg-amber-500 text-slate-950 font-mono text-xs font-bold flex items-center justify-center shrink-0 shadow-inner">
                     {i + 1}
                   </span>
                   <Input
                     type="text"
                     value={jobName}
                     onChange={(e) => handleJobChange(i, e.target.value)}
-                    className="h-7 text-xs bg-transparent border-none focus-visible:ring-0 px-1 text-slate-200"
+                    className="h-8 text-xs font-medium bg-transparent border-none focus-visible:ring-0 px-1 text-slate-100 placeholder:text-slate-500 w-full"
                     placeholder={`Pekerjaan ${i + 1}`}
                   />
                   {jobs.length > 1 && (
@@ -388,9 +392,9 @@ export default function CapabilityMapPage() {
                       type="button"
                       onClick={() => removeJobType(i)}
                       title={`Hapus Pekerjaan No. ${i + 1}`}
-                      className="text-slate-500 hover:text-rose-400 p-1 rounded transition-colors opacity-70 group-hover:opacity-100 shrink-0"
+                      className="text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 p-1.5 rounded transition-all shrink-0"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -415,12 +419,12 @@ export default function CapabilityMapPage() {
                     {jobs.map((j, i) => (
                       <th
                         key={i}
-                        className="py-3 px-1 text-center w-10 border-r border-slate-700 text-[10px]"
+                        className="py-3 px-1 text-center min-w-[55px] border-r border-slate-700 text-[10px]"
                         title={j}
                       >
                         <div className="flex flex-col items-center">
                           <span className="text-amber-400 font-bold">{i + 1}</span>
-                          <span className="truncate max-w-[50px] inline-block font-normal text-slate-400">{j}</span>
+                          <span className="truncate max-w-[70px] inline-block font-normal text-slate-300">{j}</span>
                         </div>
                       </th>
                     ))}
@@ -615,7 +619,7 @@ export default function CapabilityMapPage() {
                         <span className="h-5 w-5 rounded bg-slate-800 text-amber-400 font-bold text-[10px] flex items-center justify-center shrink-0 border border-slate-700">
                           {ji + 1}
                         </span>
-                        <span className="w-36 sm:w-48 truncate text-slate-300" title={jobName}>
+                        <span className="w-44 sm:w-60 shrink-0 text-slate-200 font-medium truncate" title={jobName}>
                           {jobName}
                         </span>
                         <div className="flex-1 h-3 bg-slate-800 rounded overflow-hidden border border-slate-700/60 relative">
