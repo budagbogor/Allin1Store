@@ -489,23 +489,25 @@ export default function CapabilityMapPage() {
             ) : (
               <table className="w-full text-xs text-left border-collapse border border-slate-300 bg-white rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="bg-slate-200 text-slate-900 font-mono uppercase text-[11px] border-b-2 border-slate-300 font-bold">
-                    <th className="py-2.5 px-2 text-center w-8 border-r border-slate-300">No</th>
-                    <th className="py-2.5 px-3 border-r border-slate-300 min-w-[140px] sm:w-[180px]">Nama Mekanik</th>
+                  <tr className="bg-slate-200 text-slate-900 font-mono uppercase text-[11px] border-b border-slate-300 font-bold">
+                    <th rowSpan={2} className="py-2.5 px-2 text-center w-8 border-r border-slate-300 align-middle">No</th>
+                    <th rowSpan={2} className="py-2.5 px-3 border-r border-slate-300 min-w-[140px] sm:w-[180px] align-middle">Nama Mekanik</th>
+                    <th colSpan={jobs.length} className="py-1.5 px-2 text-center border-r border-b border-slate-300 text-amber-800 font-extrabold tracking-wider bg-amber-500/10 uppercase text-[11px]">
+                      Jenis Pekerjaan (1–{jobs.length})
+                    </th>
+                    <th rowSpan={2} className="py-2.5 px-2 text-center w-14 border-r border-slate-300 align-middle">Skor</th>
+                    <th rowSpan={2} className="py-2.5 px-2 text-center w-8 print-hidden align-middle"></th>
+                  </tr>
+                  <tr className="bg-slate-200 text-slate-900 font-mono text-[11px] border-b-2 border-slate-300 font-bold">
                     {jobs.map((j, i) => (
                       <th
                         key={i}
-                        className="py-2 px-1 text-center border-r border-slate-300 text-[10px]"
-                        title={j}
+                        className="py-1 px-1 text-center border-r border-slate-300 text-amber-800 font-bold hover:bg-amber-100 transition-colors cursor-help"
+                        title={`Pekerjaan ${i + 1}: ${j}`}
                       >
-                        <div className="flex flex-col items-center">
-                          <span className="text-amber-700 font-bold">{i + 1}</span>
-                          <span className="truncate max-w-[55px] sm:max-w-[70px] inline-block font-bold text-slate-800" title={j}>{j}</span>
-                        </div>
+                        {i + 1}
                       </th>
                     ))}
-                    <th className="py-2.5 px-2 text-center w-14 border-r border-slate-300">Skor</th>
-                    <th className="py-2.5 px-2 text-center w-8 print-hidden"></th>
                   </tr>
                 </thead>
 
