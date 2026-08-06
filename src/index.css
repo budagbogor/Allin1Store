@@ -82,3 +82,22 @@
     @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg;
   }
 }
+
+@media print {
+  body {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print-hidden {
+    display: none !important;
+  }
+  .print-show {
+    display: block !important;
+  }
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, UserPlus, Save, RefreshCw, RotateCcw, Trash2, Award, ChevronDown, Plus, X } from "lucide-react";
+import { ArrowLeft, UserPlus, Save, RefreshCw, RotateCcw, Trash2, Award, ChevronDown, Plus, X, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -197,6 +197,11 @@ export default function CapabilityMapPage() {
     }
   };
 
+  // Print PDF
+  const handlePrint = () => {
+    window.print();
+  };
+
   // Reset Form
   const handleReset = () => {
     if (!resetArmed) {
@@ -248,7 +253,7 @@ export default function CapabilityMapPage() {
   return (
     <div className="min-h-dvh bg-slate-900 text-slate-100 flex flex-col font-sans">
       {/* Top Header Bar */}
-      <header className="gradient-primary px-4 sm:px-6 py-4 shadow-lg border-b border-white/10">
+      <header className="gradient-primary px-4 sm:px-6 py-4 shadow-lg border-b border-white/10 print-hidden">
         <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link to="/dashboard">
@@ -269,6 +274,16 @@ export default function CapabilityMapPage() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <Button
+              onClick={handlePrint}
+              variant="outline"
+              size="sm"
+              className="border-amber-400/40 bg-amber-400/20 text-amber-300 hover:bg-amber-400/30 gap-1.5 font-bold"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Cetak PDF</span>
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white gap-1.5">
@@ -364,7 +379,7 @@ export default function CapabilityMapPage() {
               <Button
                 onClick={addJobType}
                 size="sm"
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-xs h-7 px-2.5 font-bold gap-1 shadow-sm"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-xs h-7 px-2.5 font-bold gap-1 shadow-sm print-hidden"
               >
                 <Plus className="h-3.5 w-3.5" />
                 + Tambah Jenis Pekerjaan
@@ -392,7 +407,7 @@ export default function CapabilityMapPage() {
                       type="button"
                       onClick={() => removeJobType(i)}
                       title={`Hapus Pekerjaan No. ${i + 1}`}
-                      className="text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 p-1.5 rounded transition-all shrink-0"
+                      className="text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 p-1.5 rounded transition-all shrink-0 print-hidden"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -429,7 +444,7 @@ export default function CapabilityMapPage() {
                       </th>
                     ))}
                     <th className="py-3 px-2 text-center min-w-[60px] border-r border-slate-700">Skor</th>
-                    <th className="py-3 px-2 text-center w-10"></th>
+                    <th className="py-3 px-2 text-center w-10 print-hidden"></th>
                   </tr>
                 </thead>
 
@@ -505,7 +520,7 @@ export default function CapabilityMapPage() {
                             </Badge>
                           </td>
 
-                          <td className="py-2 px-1 text-center">
+                          <td className="py-2 px-1 text-center print-hidden">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -542,7 +557,7 @@ export default function CapabilityMapPage() {
                         );
                       })}
                       <td className="border-r border-slate-800"></td>
-                      <td></td>
+                      <td className="print-hidden"></td>
                     </tr>
                   </tfoot>
                 )}
@@ -551,7 +566,7 @@ export default function CapabilityMapPage() {
           </div>
 
           {/* Action Toolbar */}
-          <div className="p-4 sm:p-6 bg-slate-900 border-t border-slate-700/80 flex flex-wrap items-center gap-3">
+          <div className="p-4 sm:p-6 bg-slate-900 border-t border-slate-700/80 flex flex-wrap items-center gap-3 print-hidden">
             <Button
               onClick={() => addRow()}
               className="bg-amber-400 text-slate-950 hover:bg-amber-300 font-semibold font-mono text-xs gap-2"
@@ -576,6 +591,15 @@ export default function CapabilityMapPage() {
             >
               <Save className="h-4 w-4 text-emerald-400" />
               Simpan Data
+            </Button>
+
+            <Button
+              onClick={handlePrint}
+              variant="outline"
+              className="border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 font-mono text-xs gap-2 font-bold"
+            >
+              <Printer className="h-4 w-4 text-sky-400" />
+              Cetak / Simpan PDF
             </Button>
 
             <Button
