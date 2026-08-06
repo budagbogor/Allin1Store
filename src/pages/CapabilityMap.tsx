@@ -480,32 +480,31 @@ export default function CapabilityMapPage() {
           </div>
 
           {/* Table Container */}
-          <div className="p-4 sm:p-5 overflow-x-auto print-compact-p">
+          <div className="p-3 sm:p-5 overflow-x-auto print-compact-p">
             {loading ? (
               <div className="py-12 text-center text-slate-500 font-mono text-sm">
                 <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-amber-500" />
                 Memuat data capability map...
               </div>
             ) : (
-              <table className="w-full text-xs text-left border-collapse border border-slate-300 bg-white rounded-lg overflow-hidden min-w-[800px]">
+              <table className="w-full text-xs text-left border-collapse border border-slate-300 bg-white rounded-lg overflow-hidden">
                 <thead>
                   <tr className="bg-slate-200 text-slate-900 font-mono uppercase text-[11px] border-b-2 border-slate-300 font-bold">
-                    <th className="py-2.5 px-2 text-center w-9 border-r border-slate-300">No</th>
-                    <th className="py-2.5 px-3 min-w-[150px] border-r border-slate-300">Nama Mekanik</th>
-                    <th className="py-2.5 px-3 min-w-[100px] border-r border-slate-300">Masa Kerja</th>
+                    <th className="py-2.5 px-2 text-center w-8 border-r border-slate-300">No</th>
+                    <th className="py-2.5 px-3 border-r border-slate-300 min-w-[140px] sm:w-[180px]">Nama Mekanik</th>
                     {jobs.map((j, i) => (
                       <th
                         key={i}
-                        className="py-2 px-1 text-center min-w-[50px] border-r border-slate-300 text-[10px]"
+                        className="py-2 px-1 text-center border-r border-slate-300 text-[10px]"
                         title={j}
                       >
                         <div className="flex flex-col items-center">
                           <span className="text-amber-700 font-bold">{i + 1}</span>
-                          <span className="truncate max-w-[65px] inline-block font-bold text-slate-800">{j}</span>
+                          <span className="truncate max-w-[55px] sm:max-w-[70px] inline-block font-bold text-slate-800" title={j}>{j}</span>
                         </div>
                       </th>
                     ))}
-                    <th className="py-2.5 px-2 text-center min-w-[55px] border-r border-slate-300">Skor</th>
+                    <th className="py-2.5 px-2 text-center w-14 border-r border-slate-300">Skor</th>
                     <th className="py-2.5 px-2 text-center w-8 print-hidden"></th>
                   </tr>
                 </thead>
@@ -513,7 +512,7 @@ export default function CapabilityMapPage() {
                 <tbody>
                   {rows.length === 0 ? (
                     <tr>
-                      <td colSpan={jobs.length + 4} className="py-8 text-center text-slate-500 font-mono italic">
+                      <td colSpan={jobs.length + 3} className="py-8 text-center text-slate-500 font-mono italic">
                         Belum ada mekanik. Klik "+ Tambah Mekanik" untuk mulai mengisi data.
                       </td>
                     </tr>
@@ -537,20 +536,11 @@ export default function CapabilityMapPage() {
                               className="h-7 text-xs font-semibold bg-white border-slate-300 text-slate-900 focus-visible:ring-amber-500"
                             />
                           </td>
-                          <td className="py-1 px-2 border-r border-slate-200">
-                            <Input
-                              type="text"
-                              value={r.masa}
-                              placeholder="cth: 2 tahun"
-                              onChange={(e) => updateMechanicText(r.id, "masa", e.target.value)}
-                              className="h-7 text-xs bg-white border-slate-300 text-slate-800 font-medium focus-visible:ring-amber-500"
-                            />
-                          </td>
 
                           {jobs.map((_, ji) => {
                             const checked = Boolean(r.checks[ji]);
                             return (
-                              <td key={ji} className="py-1 px-1 text-center border-r border-slate-200">
+                              <td key={ji} className="py-1 px-0.5 text-center border-r border-slate-200">
                                 <button
                                   type="button"
                                   title={jobs[ji]}
@@ -567,7 +557,7 @@ export default function CapabilityMapPage() {
                             );
                           })}
 
-                          <td className="py-1 px-2 text-center border-r border-slate-200">
+                          <td className="py-1 px-1.5 text-center border-r border-slate-200">
                             <Badge
                               variant="outline"
                               className={`font-mono text-xs font-bold border ${
@@ -603,13 +593,13 @@ export default function CapabilityMapPage() {
                 {rows.length > 0 && (
                   <tfoot>
                     <tr className="bg-slate-200 text-slate-900 font-mono text-xs border-t-2 border-slate-300">
-                      <td colSpan={3} className="py-2.5 px-4 text-right font-bold tracking-wider text-amber-800 border-r border-slate-300 uppercase">
+                      <td colSpan={2} className="py-2.5 px-3 text-right font-bold tracking-wider text-amber-800 border-r border-slate-300 uppercase text-[11px]">
                         % Mekanik Menguasai
                       </td>
                       {jobs.map((_, ji) => {
                         const pct = getJobPct(ji);
                         return (
-                          <td key={ji} className="py-1.5 px-1 text-center border-r border-slate-300 relative overflow-hidden">
+                          <td key={ji} className="py-1.5 px-0.5 text-center border-r border-slate-300 relative overflow-hidden">
                             <div
                               className="absolute bottom-0 left-0 right-0 bg-amber-400/40 transition-all duration-300"
                               style={{ height: `${pct}%` }}
