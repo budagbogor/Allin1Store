@@ -27,7 +27,7 @@ export const JENIS_PEKERJAAN_GROUPS = [
   },
   {
     category: "Transmisi & Penggerak",
-    items: ["Ganti Seal Drive Shaft", "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda", "Ganti Filter CVT", "Ganti Kopling Set", "Ganti Seal Input Shaft", "Ganti Seal Output Shaft", "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling", "Ganti Kopling Set + Seal Crankshaft"]
+    items: ["Ganti Seal Drive Shaft", "Ganti Boot Drive Shaft", "Ganti Drive Shaft", "Ganti Bearing Roda", "Ganti Filter CVT", "Ganti Kopling (+/- Seal Crankshaft)", "Ganti Seal Input Shaft", "Ganti Seal Output Shaft", "Ganti Mounting Transmisi", "Ganti Master Kopling", "Kuras Minyak Kopling"]
   },
   {
     category: "Lainnya",
@@ -611,6 +611,18 @@ export function getMonthlyEntries(entries: SalesEntry[]): number[] {
   return monthly;
 }
 
+export function normalizeJenisPekerjaan(jenis: string): string {
+  const trimmed = jenis.trim();
+  if (
+    trimmed === "Ganti Kopling Set" ||
+    trimmed === "Ganti Kopling Set + Seal Crankshaft" ||
+    trimmed === "Ganti Kopling (+/- Seal Crankshaft)"
+  ) {
+    return "Ganti Kopling (+/- Seal Crankshaft)";
+  }
+  return trimmed;
+}
+
 export function splitJenisPekerjaan(jenisPekerjaan: string): string[] {
   return jenisPekerjaan
     .split("|")
@@ -621,7 +633,7 @@ export function splitJenisPekerjaan(jenisPekerjaan: string): string[] {
 export function getTopPekerjaan(entries: SalesEntry[], limit = 5) {
   const map: Record<string, number> = {};
   entries.forEach((e) => {
-    const jenisList = splitJenisPekerjaan(e.jenisPekerjaan);
+    const jenisList = splitJenisPekerjaan(e.jenisPekerjaan).map(normalizeJenisPekerjaan);
     const denom = jenisList.length || 1;
     const portion = e.jumlahSales / denom;
     jenisList.forEach((j) => {
@@ -659,7 +671,7 @@ export function getTopModelKendaraanPerPekerjaan(
     const model = e.modelKendaraan.trim();
     if (!model) return;
 
-    const jenisSet = new Set(splitJenisPekerjaan(e.jenisPekerjaan));
+    const jenisSet = new Set(splitJenisPekerjaan(e.jenisPekerjaan).map(normalizeJenisPekerjaan));
     jenisSet.forEach((jenis) => {
       if (!modelMapByPekerjaan[jenis]) modelMapByPekerjaan[jenis] = {};
       modelMapByPekerjaan[jenis][model] = (modelMapByPekerjaan[jenis][model] || 0) + 1;

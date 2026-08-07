@@ -540,15 +540,15 @@ export default function Dashboard() {
                               </div>
                               <Progress value={pct} className="h-1 my-0.5 bg-slate-100 dark:bg-slate-800" />
                               {stats?.totalUnit ? (
-                                <div className="flex items-center justify-between gap-1.5 text-[10px] text-muted-foreground">
+                                <div className="flex items-start justify-between gap-1.5 text-[10px] text-muted-foreground mt-0.5">
                                   <p
-                                    className="truncate min-w-0 flex-1 leading-tight"
+                                    className="min-w-0 flex-1 leading-snug break-words"
                                     title={`Kendaraan: ${topModelsText || "-"}`}
                                   >
                                     <span className="font-medium text-foreground/70">Kendaraan: </span>
                                     {topModelsText || "-"}
                                   </p>
-                                  <span className="text-[9px] text-muted-foreground shrink-0 font-medium bg-muted/60 px-1 py-0.2 rounded">
+                                  <span className="text-[9px] text-muted-foreground shrink-0 font-medium bg-muted/60 px-1 py-0.5 rounded ml-1">
                                     {stats.totalUnit} unit
                                   </span>
                                 </div>
