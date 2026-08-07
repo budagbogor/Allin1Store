@@ -7,7 +7,7 @@ export const JENIS_PEKERJAAN_GROUPS = [
   },
   {
     category: "Pendingin & Belt",
-    items: ["Ganti V-Belt", "Ganti Tensioner", "Ganti Engine Mounting RH Mounting", "Ganti Engine Mounting LH Mounting", "Ganti Seal Crankshaft Belakang", "Ganti Tutup Radiator", "Ganti Radiator", "Ganti Motor Fan Radiator"]
+    items: ["Ganti V-Belt", "Ganti Tensioner", "Ganti Engine Mounting", "Ganti Seal Crankshaft Belakang", "Ganti Tutup Radiator", "Ganti Radiator", "Ganti Motor Fan Radiator"]
   },
   {
     category: "Sistem Bahan Bakar",
@@ -619,6 +619,9 @@ export function normalizeJenisPekerjaan(jenis: string): string {
     trimmed === "Ganti Kopling (+/- Seal Crankshaft)"
   ) {
     return "Ganti Kopling (+/- Seal Crankshaft)";
+  }
+  if (/^ganti engine mounting/i.test(trimmed)) {
+    return "Ganti Engine Mounting";
   }
   return trimmed;
 }
