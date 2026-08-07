@@ -177,7 +177,7 @@ export default function Dashboard() {
     topPekerjaan.map((t) => t.name)
   );
   const unitCount = filteredEntries.length;
-  const maxPekerjaanSales = Math.max(...topPekerjaan.map((t) => t.value), 1);
+  const maxPekerjaanUnits = Math.max(...topPekerjaan.map((t) => t.units), 1);
   const maxModelCount = Math.max(...topModel.map((m) => m.value), 1);
 
   let currentTotalSalesToko = 0;
@@ -524,7 +524,7 @@ export default function Dashboard() {
                         <p className="text-xs text-muted-foreground">Belum ada data jenis pekerjaan.</p>
                       ) : (
                         topPekerjaan.map((item, i) => {
-                          const pct = (item.value / maxPekerjaanSales) * 100;
+                          const pct = (item.units / maxPekerjaanUnits) * 100;
                           const stats = topModelPerPekerjaan[item.name];
                           const topModelsText = (stats?.models || [])
                             .map((m) => `${m.name} (${m.value})`)

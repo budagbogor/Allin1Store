@@ -631,19 +631,27 @@ export function splitJenisPekerjaan(jenisPekerjaan: string): string[] {
 }
 
 export function getTopPekerjaan(entries: SalesEntry[], limit = 5) {
-  const map: Record<string, number> = {};
+  const map: Record<string, { value: number; units: number }> = {};
   entries.forEach((e) => {
     const jenisList = splitJenisPekerjaan(e.jenisPekerjaan).map(normalizeJenisPekerjaan);
     const denom = jenisList.length || 1;
     const portion = e.jumlahSales / denom;
+    const jenisSet = new Set(jenisList);
+
     jenisList.forEach((j) => {
-      map[j] = (map[j] || 0) + portion;
+      if (!map[j]) map[j] = { value: 0, units: 0 };
+      map[j].value += portion;
+    });
+
+    jenisSet.forEach((j) => {
+      if (!map[j]) map[j] = { value: 0, units: 0 };
+      map[j].units += 1;
     });
   });
   return Object.entries(map)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => (b[1].units - a[1].units) || (b[1].value - a[1].value))
     .slice(0, limit)
-    .map(([name, value]) => ({ name, value }));
+    .map(([name, { value, units }]) => ({ name, value, units }));
 }
 
 export function getTopModelKendaraan(entries: SalesEntry[], limit = 10) {
