@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, UserPlus, Save, RefreshCw, RotateCcw, Trash2, Award, ChevronDown, Plus, X, Printer } from "lucide-react";
+import { ArrowLeft, UserPlus, Save, RefreshCw, RotateCcw, Trash2, Award, ChevronDown, Plus, X, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
   saveCapabilityMap,
   type MechanicRow,
   type CapabilityMapData,
+  JENIS_PEKERJAAN,
 } from "@/lib/data";
 import {
   DropdownMenu,
@@ -22,9 +23,85 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 const DEFAULT_JOB_COUNT = 10;
 const DEFAULT_JOBS = Array.from({ length: DEFAULT_JOB_COUNT }, (_, i) => `Pekerjaan ${i + 1}`);
+
+interface JobSelectDropdownProps {
+  value: string;
+  onChange: (val: string) => void;
+  index: number;
+}
+
+function JobSelectDropdown({ value, onChange, index }: JobSelectDropdownProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          className="h-7 text-xs font-semibold bg-transparent border-none focus:outline-none px-1 text-slate-800 w-full flex items-center justify-between gap-1 text-left min-w-0"
+        >
+          <span className="truncate flex-1 pr-1">{value || `Pekerjaan ${index + 1}`}</span>
+          <ChevronDown className="h-3.5 w-3.5 opacity-50 shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[240px] p-0 bg-white shadow-lg border border-slate-200 rounded-md overflow-hidden" align="start">
+        <Command className="w-full">
+          <CommandInput placeholder="Cari pekerjaan..." className="h-9 text-xs border-none focus:ring-0" />
+          <CommandList className="max-h-60 overflow-y-auto">
+            <CommandEmpty className="py-2.5 text-xs text-center text-slate-500">Tidak ada hasil.</CommandEmpty>
+            <CommandGroup>
+              {JENIS_PEKERJAAN.map((jp) => (
+                <CommandItem
+                  key={jp}
+                  value={jp}
+                  onSelect={() => {
+                    onChange(jp);
+                    setOpen(false);
+                  }}
+                  className="text-xs py-2 px-2.5 cursor-pointer hover:bg-slate-100 flex items-center justify-between transition-colors aria-selected:bg-slate-100/80"
+                >
+                  <span className="truncate">{jp}</span>
+                  {value === jp && <Check className="h-3.5 w-3.5 text-amber-600 shrink-0" />}
+                </CommandItem>
+              ))}
+              {value && !JENIS_PEKERJAAN.includes(value) && (
+                <CommandItem
+                  key={value}
+                  value={value}
+                  onSelect={() => {
+                    setOpen(false);
+                  }}
+                  className="text-xs py-2 px-2.5 cursor-pointer hover:bg-slate-100 flex items-center justify-between transition-colors aria-selected:bg-slate-100/80"
+                >
+                  <span className="truncate">{value}</span>
+                  <Check className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                </CommandItem>
+              )}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function CapabilityMapPage() {
   const { selectedStore } = useStoreContext();
@@ -457,12 +534,10 @@ export default function CapabilityMapPage() {
                   <span className="h-6 w-6 rounded bg-amber-400 text-slate-950 font-mono text-xs font-bold flex items-center justify-center shrink-0 shadow-inner">
                     {i + 1}
                   </span>
-                  <Input
-                    type="text"
+                  <JobSelectDropdown
                     value={jobName}
-                    onChange={(e) => handleJobChange(i, e.target.value)}
-                    className="h-7 text-xs font-semibold bg-transparent border-none focus-visible:ring-0 px-1 text-slate-800 placeholder:text-slate-400 w-full"
-                    placeholder={`Pekerjaan ${i + 1}`}
+                    onChange={(val) => handleJobChange(i, val)}
+                    index={i}
                   />
                   {jobs.length > 1 && (
                     <button
