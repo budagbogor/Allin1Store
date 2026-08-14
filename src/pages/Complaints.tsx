@@ -12,7 +12,10 @@ import {
   deleteComplaint,
   getComplaintStats,
   getComplaintCauseStats,
+  getEntries,
   type ComplaintEntry,
+  type SalesEntry,
+  BULAN,
 } from "@/lib/data";
 import { useStoreContext } from "@/lib/storeContext";
 import logoMobeng from "@/assets/logomobeng.jpg";
@@ -27,6 +30,7 @@ const CAUSE_COLORS: Record<string, string> = {
 
 export default function ComplaintsPage() {
   const [complaints, setComplaints] = useState<ComplaintEntry[]>([]);
+  const [salesEntries, setSalesEntries] = useState<SalesEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingComplaint, setEditingComplaint] = useState<ComplaintEntry | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -35,8 +39,12 @@ export default function ComplaintsPage() {
   const fetchComplaints = useCallback(async () => {
     if (!selectedStore) return;
     try {
-      const data = await getComplaints(selectedStore);
-      setComplaints(data);
+      const [complaintData, salesData] = await Promise.all([
+        getComplaints(selectedStore),
+        getEntries(selectedStore),
+      ]);
+      setComplaints(complaintData);
+      setSalesEntries(salesData);
     } catch (err) {
       console.error(err);
       toast.error("Gagal memuat data complain.");
@@ -56,6 +64,48 @@ export default function ComplaintsPage() {
   const inProgressComplaints = complaints.filter((c) => c.status === "In Progress").length;
   const resolvedComplaints = complaints.filter((c) => c.status === "Resolved").length;
   const closedComplaints = complaints.filter((c) => c.status === "Closed").length;
+
+  const getComplaintLastTxMonth = (c: ComplaintEntry) => {
+    const compDate = new Date(c.tanggal);
+    const compMerek = (c.merekKendaraan || "").trim().toLowerCase();
+    const compModel = (c.modelKendaraan || "").trim().toLowerCase();
+
+    const matchingSales = salesEntries.filter((s) => {
+      const salesMerek = (s.merekKendaraan || "").trim().toLowerCase();
+      const salesModel = (s.modelKendaraan || "").trim().toLowerCase();
+      const isMerekMatch = compMerek.includes(salesMerek) || salesMerek.includes(compMerek) || compMerek === salesMerek;
+      const isModelMatch = compModel.includes(salesModel) || salesModel.includes(compModel) || compModel === salesModel;
+      return isMerekMatch && isModelMatch && new Date(s.tanggal) <= compDate;
+    });
+
+    if (matchingSales.length > 0) {
+      matchingSales.sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime());
+      return new Date(matchingSales[0].tanggal);
+    }
+
+    return compDate;
+  };
+
+  const monthlyStats = Array.from({ length: 12 }, (_, monthIdx) => {
+    const salesCount = salesEntries.filter((s) => {
+      const d = new Date(s.tanggal);
+      return d.getFullYear() === 2026 && d.getMonth() === monthIdx;
+    }).length;
+
+    const complaintCount = complaints.filter((c) => {
+      const lastTxDate = getComplaintLastTxMonth(c);
+      return lastTxDate.getFullYear() === 2026 && lastTxDate.getMonth() === monthIdx;
+    }).length;
+
+    const ratio = salesCount > 0 ? (complaintCount / salesCount) * 100 : 0;
+
+    return {
+      monthName: BULAN[monthIdx],
+      salesCount,
+      complaintCount,
+      ratio: Math.round(ratio * 10) / 10,
+    };
+  });
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus data complain ini?")) return;
@@ -255,6 +305,61 @@ export default function ComplaintsPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Monthly Complaint Ratio Section */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-amber-500" />
+                  Rasio Complain vs Unit Service (Per Bulan Transaksi)
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Persentase complain dihitung berdasarkan perbandingan jumlah unit complain dengan total unit entry service baru pada bulan transaksi service terakhir unit tersebut.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50 dark:bg-slate-800">
+                        <TableHead>Bulan Transaksi Service Terakhir</TableHead>
+                        <TableHead className="text-center">Total Unit Service Baru</TableHead>
+                        <TableHead className="text-center">Jumlah Unit Complain</TableHead>
+                        <TableHead className="text-center font-bold">Rasio Complain (%)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {monthlyStats
+                        .filter((m) => m.salesCount > 0 || m.complaintCount > 0)
+                        .map((m) => (
+                          <TableRow key={m.monthName} className="hover:bg-slate-50/50">
+                            <TableCell className="font-semibold">{m.monthName} 2026</TableCell>
+                            <TableCell className="text-center">{m.salesCount} unit</TableCell>
+                            <TableCell className="text-center">{m.complaintCount} unit</TableCell>
+                            <TableCell className="text-center font-bold">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                m.ratio > 10 ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300" :
+                                m.ratio > 5 ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" :
+                                m.ratio > 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" :
+                                "bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-300"
+                              }`}>
+                                {m.ratio}%
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      {monthlyStats.filter((m) => m.salesCount > 0 || m.complaintCount > 0).length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-6 text-muted-foreground italic">
+                            Belum ada data transaksi service atau complain untuk tahun 2026.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Complaints Table */}
             <Card className="glass-card overflow-hidden">
