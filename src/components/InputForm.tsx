@@ -55,6 +55,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
 
   // Langkah Pengerjaan
   const [langkahPengerjaan, setLangkahPengerjaan] = useState("");
+  const [noWo, setNoWo] = useState("");
 
   useEffect(() => {
     if (open && editData) {
@@ -98,6 +99,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
           : []
       );
       setLangkahPengerjaan(editData.langkahPengerjaan ?? "");
+      setNoWo(editData.noWo ?? "");
     } else if (open && !editData) {
       setDate(undefined);
       setMerek("");
@@ -119,6 +121,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
       setSpecialToolsList([]);
       setSpecialToolInput("");
       setLangkahPengerjaan("");
+      setNoWo("");
     }
   }, [open, editData]);
 
@@ -150,8 +153,8 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
     const finalMerek = isCustomMerek ? merekManual.trim() : merek;
     const finalModel = isCustomModel ? modelManual.trim() : model;
 
-    if (!date || !finalMerek || !finalModel || jenisList.length === 0 || !sales) {
-      toast.error("Semua field wajib harus diisi!");
+    if (!noWo.trim() || !date || !finalMerek || !finalModel || jenisList.length === 0 || !sales) {
+      toast.error("Semua field wajib harus diisi (termasuk No. Work Order)!");
       return;
     }
     const amount = parseInt(sales.replace(/\D/g, ""), 10);
@@ -176,6 +179,7 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
         leadtimeMenit: isNaN(menitVal) ? 0 : menitVal,
         specialTools: specialToolsList.join(" | "),
         langkahPengerjaan: langkahPengerjaan.trim(),
+        noWo: noWo.trim(),
       };
 
       if (editData?.id) {
@@ -218,6 +222,18 @@ export function InputForm({ onSuccess, editData, open: controlledOpen, onOpenCha
           </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
+
+          {/* No. Work Order */}
+          <div className="grid gap-2">
+            <Label htmlFor="noWo">No. Work Order (No. WO) <span className="text-red-500 font-bold">*</span></Label>
+            <Input
+              id="noWo"
+              placeholder="Contoh: WO-2026-0001"
+              value={noWo}
+              onChange={(e) => setNoWo(e.target.value)}
+              required
+            />
+          </div>
 
           {/* Tanggal */}
           <div className="grid gap-2">

@@ -28,6 +28,7 @@ interface PrefillData {
   merekKendaraan: string;
   modelKendaraan: string;
   jenisPekerjaan?: string;
+  noWo?: string;
 }
 
 interface Props {
@@ -68,6 +69,7 @@ export function ComplaintForm({
   const [catatanPenanganan, setCatatanPenanganan] = useState("");
   const [saving, setSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [noWo, setNoWo] = useState("");
 
   const isEditing = Boolean(initialData?.id);
 
@@ -89,10 +91,12 @@ export function ComplaintForm({
         setPic(initialData.pic || "");
         setPenyebabMasalah(initialData.penyebabMasalah || "");
         setCatatanPenanganan(initialData.catatanPenanganan || "");
+        setNoWo(initialData.noWo || "");
       } else if (prefillData) {
         setMerek(prefillData.merekKendaraan as (typeof MEREK_KENDARAAN)[number] || "");
         setModel(prefillData.modelKendaraan || "");
         setJenisPekerjaanSebelumnya(prefillData.jenisPekerjaan || "");
+        setNoWo(prefillData.noWo || "");
         setStatus("Open");
       }
     } else {
@@ -107,14 +111,15 @@ export function ComplaintForm({
         setPic("");
         setPenyebabMasalah("");
         setCatatanPenanganan("");
+        setNoWo("");
         setDate(new Date());
       }
     }
   }, [open, prefillData, initialData]);
 
   const handleSubmit = async () => {
-    if (!date || !merek || !model || !jenisComplain) {
-      toast.error("Tanggal, Merek, Model, dan Jenis Complain wajib diisi!");
+    if (!date || !merek || !model || !jenisComplain || !noWo.trim()) {
+      toast.error("No. Work Order, Tanggal, Merek, Model, dan Jenis Complain wajib diisi!");
       return;
     }
     setSaving(true);
@@ -130,6 +135,7 @@ export function ComplaintForm({
         pic: pic,
         penyebabMasalah: penyebabMasalah,
         catatanPenanganan: catatanPenanganan,
+        noWo: noWo.trim(),
       };
 
       if (isEditing && initialData) {
@@ -168,6 +174,18 @@ export function ComplaintForm({
           </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
+          {/* No. Work Order */}
+          <div className="grid gap-2">
+            <Label htmlFor="noWo">No. Work Order (No. WO) <span className="text-red-500 font-bold">*</span></Label>
+            <Input
+              id="noWo"
+              placeholder="Masukkan No. Work Order yang sesuai..."
+              value={noWo}
+              onChange={(e) => setNoWo(e.target.value)}
+              required
+            />
+          </div>
+
           {/* Tanggal */}
           <div className="grid gap-2">
             <Label>Tanggal Temuan</Label>

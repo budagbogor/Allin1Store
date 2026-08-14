@@ -244,6 +244,7 @@ export interface SalesEntry {
   leadtimeMenit?: number;
   specialTools?: string; // pipe-separated
   langkahPengerjaan?: string;
+  noWo?: string;
 }
 
 export interface MonthlyReport {
@@ -277,6 +278,7 @@ export interface ComplaintEntry {
   pic?: string;
   penyebabMasalah?: string;
   catatanPenanganan?: string;
+  noWo?: string;
 }
 
 export const COMPLAINT_TYPES = [
@@ -311,6 +313,7 @@ export async function getEntries(storeName: string): Promise<SalesEntry[]> {
     leadtimeMenit: r.leadtime_menit ?? 0,
     specialTools: r.special_tools ?? "",
     langkahPengerjaan: r.langkah_pengerjaan ?? "",
+    noWo: r.no_wo || "",
   }));
 }
 
@@ -328,6 +331,7 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">, storeName: string
       leadtime_menit: entry.leadtimeMenit ?? 0,
       special_tools: entry.specialTools ?? "",
       langkah_pengerjaan: entry.langkahPengerjaan ?? "",
+      no_wo: entry.noWo || "",
       store_name: storeName,
     })
     .select()
@@ -345,6 +349,7 @@ export async function saveEntry(entry: Omit<SalesEntry, "id">, storeName: string
     leadtimeMenit: data.leadtime_menit ?? 0,
     specialTools: data.special_tools ?? "",
     langkahPengerjaan: data.langkah_pengerjaan ?? "",
+    noWo: data.no_wo || "",
   };
 }
 
@@ -362,6 +367,7 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
       leadtime_menit: entry.leadtimeMenit ?? 0,
       special_tools: entry.specialTools ?? "",
       langkah_pengerjaan: entry.langkahPengerjaan ?? "",
+      no_wo: entry.noWo || "",
       // No need to update store_name on edit, assuming it stays in the same store.
 
     })
@@ -381,6 +387,7 @@ export async function updateEntry(id: string, entry: Omit<SalesEntry, "id">): Pr
     leadtimeMenit: data.leadtime_menit ?? 0,
     specialTools: data.special_tools ?? "",
     langkahPengerjaan: data.langkah_pengerjaan ?? "",
+    noWo: data.no_wo || "",
   };
 }
 
@@ -475,6 +482,7 @@ export async function getComplaints(storeName: string): Promise<ComplaintEntry[]
     pic: r.pic || "",
     penyebabMasalah: r.penyebab_masalah || "",
     catatanPenanganan: r.catatan_penanganan || "",
+    noWo: r.no_wo || "",
   }));
 }
 
@@ -492,6 +500,7 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
       pic: entry.pic || "",
       penyebab_masalah: entry.penyebabMasalah || "",
       catatan_penanganan: entry.catatanPenanganan || "",
+      no_wo: entry.noWo || "",
       store_name: storeName,
     })
     .select()
@@ -509,6 +518,7 @@ export async function saveComplaint(entry: Omit<ComplaintEntry, "id">, storeName
     pic: data.pic || "",
     penyebabMasalah: data.penyebab_masalah || "",
     catatanPenanganan: data.catatan_penanganan || "",
+    noWo: data.no_wo || "",
   };
 }
 
@@ -524,6 +534,7 @@ export async function updateComplaint(id: string, entry: Partial<ComplaintEntry>
   if (entry.pic !== undefined) payload.pic = entry.pic;
   if (entry.penyebabMasalah !== undefined) payload.penyebab_masalah = entry.penyebabMasalah;
   if (entry.catatanPenanganan !== undefined) payload.catatan_penanganan = entry.catatanPenanganan;
+  if (entry.noWo !== undefined) payload.no_wo = entry.noWo;
 
   const { data, error } = await supabase
     .from("complaints")
@@ -544,6 +555,7 @@ export async function updateComplaint(id: string, entry: Partial<ComplaintEntry>
     pic: data.pic || "",
     penyebabMasalah: data.penyebab_masalah || "",
     catatanPenanganan: data.catatan_penanganan || "",
+    noWo: data.no_wo || "",
   };
 }
 

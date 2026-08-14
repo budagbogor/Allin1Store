@@ -67,10 +67,26 @@ export default function ComplaintsPage() {
 
   const getComplaintLastTxMonth = (c: ComplaintEntry) => {
     const compDate = new Date(c.tanggal);
+
+    // Try matching by Work Order number first
+    if (c.noWo && c.noWo.trim()) {
+      const match = salesEntries.find((s) => s.noWo && s.noWo.trim().toLowerCase() === c.noWo!.trim().toLowerCase());
+      if (match) {
+        return new Date(match.tanggal);
+      }
+    }
+
+    // Legacy fallback by brand/model/date
     const compMerek = (c.merekKendaraan || "").trim().toLowerCase();
     const compModel = (c.modelKendaraan || "").trim().toLowerCase();
 
     const matchingSales = salesEntries.filter((s) => {
+      // If either has a different non-empty WO, don't match (prevents false matches on different units)
+      if ((c.noWo && c.noWo.trim()) || (s.noWo && s.noWo.trim())) {
+        if (c.noWo?.trim().toLowerCase() !== s.noWo?.trim().toLowerCase()) {
+          return false;
+        }
+      }
       const salesMerek = (s.merekKendaraan || "").trim().toLowerCase();
       const salesModel = (s.modelKendaraan || "").trim().toLowerCase();
       const isMerekMatch = compMerek.includes(salesMerek) || salesMerek.includes(compMerek) || compMerek === salesMerek;
@@ -377,6 +393,7 @@ export default function ComplaintsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50 dark:bg-slate-800">
+                          <TableHead>No. WO</TableHead>
                           <TableHead>Tanggal</TableHead>
                           <TableHead>Unit Kendaraan</TableHead>
                           <TableHead>Jenis Complain</TableHead>
@@ -390,6 +407,7 @@ export default function ComplaintsPage() {
                       <TableBody>
                         {complaints.map((c) => (
                           <TableRow key={c.id} className="hover:bg-slate-50/50">
+                            <TableCell className="font-mono text-xs font-bold text-slate-600">{c.noWo || "-"}</TableCell>
                             <TableCell className="whitespace-nowrap font-medium text-xs">{c.tanggal}</TableCell>
                             <TableCell>
                               <div className="text-sm font-bold">{c.modelKendaraan}</div>

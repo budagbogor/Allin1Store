@@ -133,19 +133,23 @@ export default function Dashboard() {
   }, [selectedMonth, showComplaintsOnly]);
 
   const getComplaintForEntry = useCallback((entry: SalesEntry): ComplaintEntry | undefined => {
-    return (
-      complaints.find(
-        (c) =>
+    return complaints.find((c) => {
+      // If both have WO, check equality
+      if (entry.noWo && entry.noWo.trim() && c.noWo && c.noWo.trim()) {
+        return entry.noWo.trim().toLowerCase() === c.noWo.trim().toLowerCase();
+      }
+      // Legacy matching (if at least one lacks WO)
+      const hasWO = (entry.noWo && entry.noWo.trim()) || (c.noWo && c.noWo.trim());
+      if (!hasWO) {
+        // Only fallback if both don't have WO (old data)
+        return (
           c.merekKendaraan.toLowerCase() === entry.merekKendaraan.toLowerCase() &&
           c.modelKendaraan.toLowerCase() === entry.modelKendaraan.toLowerCase() &&
           c.tanggal === entry.tanggal
-      ) ||
-      complaints.find(
-        (c) =>
-          c.merekKendaraan.toLowerCase() === entry.merekKendaraan.toLowerCase() &&
-          c.modelKendaraan.toLowerCase() === entry.modelKendaraan.toLowerCase()
-      )
-    );
+        );
+      }
+      return false;
+    });
   }, [complaints]);
 
   const filteredEntries = allEntries.filter((e) => {
@@ -216,6 +220,7 @@ export default function Dashboard() {
       merekKendaraan: entry.merekKendaraan,
       modelKendaraan: entry.modelKendaraan,
       jenisPekerjaan: splitJenisPekerjaan(entry.jenisPekerjaan).join(", "),
+      noWo: entry.noWo || "",
     });
     setIsComplaintOpen(true);
   };
@@ -620,6 +625,7 @@ export default function Dashboard() {
                     <Table className="min-w-[720px]">
                     <TableHeader>
                       <TableRow>
+                        <TableHead>No. WO</TableHead>
                         <TableHead>Tanggal</TableHead>
                         <TableHead>Merek</TableHead>
                         <TableHead>Model & Status Complain</TableHead>
@@ -638,6 +644,7 @@ export default function Dashboard() {
                               matchingComplaint && "bg-rose-50/40 hover:bg-rose-50/70 dark:bg-rose-950/20"
                             )}
                           >
+                            <TableCell className="font-mono text-xs font-bold text-slate-600">{e.noWo || "-"}</TableCell>
                             <TableCell className="whitespace-nowrap font-medium text-xs">{e.tanggal}</TableCell>
                             <TableCell>{e.merekKendaraan}</TableCell>
                             <TableCell>

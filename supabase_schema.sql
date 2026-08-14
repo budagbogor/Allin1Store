@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.complaints (
     penyebab_masalah TEXT DEFAULT '',
     catatan_penanganan TEXT DEFAULT '',
     store_name TEXT NOT NULL,
+    no_wo TEXT DEFAULT '',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -25,6 +26,7 @@ ALTER TABLE public.complaints ADD COLUMN IF NOT EXISTS jenis_pekerjaan_sebelumny
 ALTER TABLE public.complaints ADD COLUMN IF NOT EXISTS pic TEXT DEFAULT '';
 ALTER TABLE public.complaints ADD COLUMN IF NOT EXISTS penyebab_masalah TEXT DEFAULT '';
 ALTER TABLE public.complaints ADD COLUMN IF NOT EXISTS catatan_penanganan TEXT DEFAULT '';
+ALTER TABLE public.complaints ADD COLUMN IF NOT EXISTS no_wo TEXT DEFAULT '';
 
 -- RLS & Access Policy (Opsional jika RLS diaktifkan)
 ALTER TABLE public.complaints ENABLE ROW LEVEL SECURITY;
@@ -48,8 +50,12 @@ CREATE TABLE IF NOT EXISTS public.sales_entries (
     special_tools TEXT DEFAULT '',
     langkah_pengerjaan TEXT DEFAULT '',
     store_name TEXT NOT NULL,
+    no_wo TEXT DEFAULT '',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Apabila tabel 'sales_entries' sudah ada sebelumnya, jalankan ALTER TABLE berikut:
+ALTER TABLE public.sales_entries ADD COLUMN IF NOT EXISTS no_wo TEXT DEFAULT '';
 
 ALTER TABLE public.sales_entries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read sales_entries" ON public.sales_entries FOR SELECT USING (true);
