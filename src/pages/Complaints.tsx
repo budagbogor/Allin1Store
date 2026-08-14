@@ -97,13 +97,13 @@ export default function ComplaintsPage() {
       return lastTxDate.getFullYear() === 2026 && lastTxDate.getMonth() === monthIdx;
     }).length;
 
-    const ratio = salesCount > 0 ? (complaintCount / salesCount) * 100 : 0;
+    const ratio = salesCount > 0 ? complaintCount / salesCount : 0;
 
     return {
       monthName: BULAN[monthIdx],
       salesCount,
       complaintCount,
-      ratio: Math.round(ratio * 10) / 10,
+      ratio,
     };
   });
 
@@ -311,10 +311,10 @@ export default function ComplaintsPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-amber-500" />
-                  Rasio Complain vs Unit Service (Per Bulan Transaksi)
+                  Rasio Rework (Per Bulan Transaksi)
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  Persentase complain dihitung berdasarkan perbandingan jumlah unit complain dengan total unit entry service baru pada bulan transaksi service terakhir unit tersebut.
+                  Rasio rework dihitung berdasarkan perbandingan jumlah unit complain dengan total unit entry service baru pada bulan transaksi service terakhir unit tersebut.
                 </p>
               </CardHeader>
               <CardContent>
@@ -325,7 +325,7 @@ export default function ComplaintsPage() {
                         <TableHead>Bulan Transaksi Service Terakhir</TableHead>
                         <TableHead className="text-center">Total Unit Service Baru</TableHead>
                         <TableHead className="text-center">Jumlah Unit Complain</TableHead>
-                        <TableHead className="text-center font-bold">Rasio Complain (%)</TableHead>
+                        <TableHead className="text-center font-bold">Rasio Rework</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -338,12 +338,12 @@ export default function ComplaintsPage() {
                             <TableCell className="text-center">{m.complaintCount} unit</TableCell>
                             <TableCell className="text-center font-bold">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                                m.ratio > 10 ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300" :
-                                m.ratio > 5 ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" :
+                                m.ratio > 0.1 ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300" :
+                                m.ratio > 0.05 ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" :
                                 m.ratio > 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" :
                                 "bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-300"
                               }`}>
-                                {m.ratio}%
+                                {m.ratio.toFixed(2)}
                               </span>
                             </TableCell>
                           </TableRow>
