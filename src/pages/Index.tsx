@@ -93,7 +93,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<SalesEntry | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string; jenisPekerjaan?: string } | null>(null);
+  const [complaintPrefill, setComplaintPrefill] = useState<{ merekKendaraan: string; modelKendaraan: string; jenisPekerjaan?: string; noWo?: string } | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [showComplaintsOnly, setShowComplaintsOnly] = useState(false);
