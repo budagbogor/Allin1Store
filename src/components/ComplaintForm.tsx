@@ -118,6 +118,10 @@ export function ComplaintForm({
   }, [open, prefillData, initialData]);
 
   const handleSubmit = async () => {
+    if (!selectedStore) {
+      toast.error("Cabang toko belum dipilih. Silakan pilih cabang toko terlebih dahulu.");
+      return;
+    }
     if (!date || !merek || !model || !jenisComplain || !noWo.trim()) {
       toast.error("No. Work Order, Tanggal, Merek, Model, dan Jenis Complain wajib diisi!");
       return;
@@ -148,9 +152,10 @@ export function ComplaintForm({
 
       setOpen(false);
       onSuccess();
-    } catch (err) {
-      console.error(err);
-      toast.error("Gagal menyimpan complaint. Pastikan koneksi atau database Supabase siap.");
+    } catch (err: any) {
+      console.error("Save complaint error:", err);
+      const errMsg = err?.message || err?.details || err?.error_description || "Gagal menyimpan complaint. Pastikan skema tabel Supabase sudah diperbarui.";
+      toast.error(errMsg);
     } finally {
       setSaving(false);
     }
